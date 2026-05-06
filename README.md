@@ -19,9 +19,6 @@ Herramienta profesional para Agrimensores. Monitorea el estado de trámites en e
 - 💾 **Base de datos local** SQLite para consultar offline
 - 🔑 **Persistencia de credenciales** para re-login rápido
 
-## Screenshot
-
-<!-- Agregar screenshot aquí -->
 
 ## Requisitos
 
@@ -97,5 +94,3 @@ Los datos se guardan en `~/.agrimensapp/`:
 - **requests** — Cliente HTTP para comunicación con ARBA
 
 ---
-
-*Desarrollado para uso profesional de agrimensores en la Provincia de Buenos Aires.*
