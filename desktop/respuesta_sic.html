@@ -1,0 +1,281 @@
+
+
+
+
+
+  
+  
+    
+    
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+	
+<title>ARBA</title>
+
+<!--estilos css -->
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+
+
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/jQuery/jquery-3.2.1/jquery-3.2.1.min.js"> </script> 
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/font-awesome/font-awesome-5.0.4/svg-with-js/js/fontawesome-all.min.js" defer></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+<!--popover js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/popper/popper-js-1.11.0/popper.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+
+<!--DataTables css-->
+<link href="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/css/dataTables.bootstrap4.min.css" rel="stylesheet" media="all"/>
+                
+<!--DataTable js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/dataTables.bootstrap4.min.js"></script>
+
+<head>
+
+  <title>DSISIC - Ingreso Usuario y Password</title>
+  <base href="https://www16.arba.gov.ar/DSISIC/jsp/loginSSO.jsp">
+  </head>
+
+
+  
+
+
+<body class="bd_aplicaciones">
+	
+ 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+<link rel="stylesheet" href='https://www.arba.gov.ar/Recursos/Plantillas/Catastro/dsisic.css' type="text/css">
+
+
+ <nav class="navbar navbar-expand-lg navApps fixed-top bg-primary" >
+<!--inicia marca-->
+<a href="http://www.arba.gov.ar" title="P&aacute;gina de inicio del sitio web ARBA" accesskey="0">
+<img src="https://www.arba.gov.ar/Recursos/Img/logoARBA-bl.svg" id="marca" alt="Agencia de Recaudaci&oacute;n de la Provincia de Buenos Aires" />
+</a>
+<!--inicia datos sesion-->
+<c:if test="false">
+
+<button type="button" class="btn-menuUsuario col align-self-end text-white float-right" aria-expanded="false" id="btn-datosSesion" >
+<i class="far fa-user-circle fa-2x" aria-hidden="true"></i>
+ <span class="d-none  d-sm-inline">  </span>
+</button>
+<div class="collapse datosSesionApp" id="panelDatosSesionApp" style="display:none; " >
+<dl class="dl-horizontal"> 
+<dt>USUARIO</dt> 
+<dd> </dd> 
+<hr>
+
+<dt>PERFILES</dt> 
+   <dd></dd> 
+
+<hr>
+
+
+</dl> 
+<a href="/DSISIC/Logout" class="btn-datosSesionApp"> CERRAR SESI&Oacute;N  <i class="fas fa-sign-out-alt" aria-hidden="true"></i> </a>                                            
+</div>
+</c:if>	
+
+</nav>
+
+<script>
+        $(document).ready(function(){
+       $("#btn-datosSesion").click(function(){
+        $("#panelDatosSesionApp").toggle();
+          });
+      });
+</script>
+
+ 	  
+<div class="aplicacion-header">
+<div class="container">  
+  		<p>Sistema de Informacion Catastral</p>
+</div></div>
+  <br> <br> <br>
+ 	
+	<div id="body" class="contPagina ">
+		
+ 
+
+
+
+<html>
+<head>
+
+<SCRIPT>
+	function contextRoot (){
+			 var path = window.location.pathname;
+	         var firstSlashPosition = 0;
+	         var secondSlashPosition = path.indexOf('/',1);
+	         return path.slice(firstSlashPosition,secondSlashPosition);
+	}
+	
+	function botonVolver() {
+			if (window.history.length == 0){
+				window.close();
+			}else {			
+				jsVolver = 	"/Logout";
+				if (jsVolver == "cerrarVentana"){
+					window.close();
+				}else{
+					if (jsVolver!=""){
+			  			parent.location= contextRoot() + jsVolver ;
+				 	}else {
+					 	parent.location= contextRoot() + "/jsp/index.jsp" ;
+				 	}
+				}				 	
+			 }
+			 	
+	}
+	
+	function goBack() {
+		
+		parent.location= document.referrer;
+	}	
+</SCRIPT>
+<script> 
+history.go(+1);
+
+	function focoInicial(){
+		document.forms[0].rol.focus();
+	}
+	
+	function TabNext(){			
+		document.forms[0].elements["submitir"].focus();	
+	}
+	
+	function esZona(){	
+		var elRol =  document.forms[0].elements["rol"].value;
+		if(elRol =='Zona' || elRol =='ZonaModificacion'){
+			document.getElementById('zonas').style ="";
+		}else{
+			document.getElementById('zonas').style ="display:none"
+		}
+		
+	};
+</script>
+
+</head> 
+
+<body onload="javascript:focoInicial();esZona()"  class="fondoBlanco">
+
+	<form name="asignarRolForm" method="post" action="/DSISIC/asignarRol.do">
+		<input type="hidden" name="metodo" value="asignarRol">
+		
+		<input type="hidden" name="usuario" value="20130675949" >
+<div class="container pb-5 contPagina" > 
+	<div class="page-header">
+			<div class="row">
+				<div class="col-9">
+					<h1>Bienvenido al SIC</h1>
+				</div>
+				<div class="col-3 d-flex flex-row-reverse align-items-center ">
+					<a href="" onclick="botonVolver();" class="float-right text-primary"   ><i class="fas fa-chevron-left"></i> VOLVER </a>
+				</div>
+			</div>	
+		</div>
+		
+		
+	<div class="card bg-gradiente p-4 border-light shadow rounded-sm h-100">			
+			<div class="card-body">	
+			<h2 class="h5 mb-4">Seleccioná el rol</h2> 
+			<form class="needs-validation" novalidate="">
+				<fieldset class="mb-4">
+					<div class="form-group">
+						<label class="sr-only" for="cuit">Rol</label>
+	 					<select class="custom-select" id="rol" name="rol" onchange="javascript:esZona();">
+							
+								<option value="UsuarioExterno">UsuarioExterno</option>
+							
+						</select>
+					</div>	
+					<div id="zonas" class="form-group">
+						<label class="sr-only" for="cuit">Zona</label>
+						<select class="custom-select" id="zona" name="zona" onchange="TabNext()">
+							
+						</select>	
+					</div>		
+				</fieldset>
+				<div class=" d-flex justify-content-center">
+					<input type="submit" name="submitir" value="Ingresar" disabled="disabled" class="btn btn-lg btn-block btn-primary">					
+				</div>
+			</form>
+		</div>
+	</div>	
+
+</div>
+</form>
+
+
+
+
+<SCRIPT>
+	saltarBienvenida = "si";
+	if (saltarBienvenida=="si"){
+		document.forms[0].submit();
+	}else{
+		document.forms[0].elements["submitir"].disabled=false;	
+	}
+
+</SCRIPT>
+
+</body>
+</html>
+  	</div>
+  	<div id="footer">
+  		
+
+
+<footer class="bg-primary ">
+
+		<div class="row justify-content-center provincia no-gutters">
+			<a href="#" class="scrollup" title="subir">Subir</a><!-- 200113 SIFICA - TODO 40 -->
+	        <img src="https://www.arba.gov.ar/Recursos/Img/img_PiePagina.png" alt="Gobierno de la Provincia de Buenos Aires"/>
+	    </div>
+
+</footer>
+
+  	</div>
+  	
+</body>
+</html>
+
+

@@ -1,0 +1,448 @@
+
+
+
+  
+  
+  
+  
+    
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+	
+<title>ARBA</title>
+
+<!--estilos css -->
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+
+
+
+
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/jQuery/jquery-3.2.1/jquery-3.2.1.min.js"> </script> 
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/font-awesome/font-awesome-5.0.4/svg-with-js/js/fontawesome-all.min.js" defer></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+<!--popover js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/popper/popper-js-1.11.0/popper.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+
+<!--DataTables css-->
+<link href="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/css/dataTables.bootstrap4.min.css" rel="stylesheet" media="all"/>
+ <link rel="stylesheet" href="https://www.arba.gov.ar/Recursos/Plantillas/Catastro/estilosWebSIC.css?n=1" type="text/css"/>               
+<!--DataTable js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/dataTables.bootstrap4.min.js"></script>
+
+<head>
+
+  <title>DSISIC - Indice</title>
+  <base href="https://www16.arba.gov.ar/DSISIC/jsp/index.jsp">
+  </head>
+
+
+  
+
+<style>
+.contenedor1 {
+			margin-top: 8%;
+
+		
+		}
+</style>
+
+<body class="bd_aplicaciones">
+	
+ 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+<link rel="stylesheet" href='https://www.arba.gov.ar/Recursos/Plantillas/Catastro/dsisic.css' type="text/css">
+
+
+ <nav class="navbar navbar-expand-lg navApps fixed-top bg-primary" >
+<!--inicia marca-->
+<a href="http://www.arba.gov.ar" title="P&aacute;gina de inicio del sitio web ARBA" accesskey="0">
+<img src="https://www.arba.gov.ar/Recursos/Img/logoARBA-bl.svg" id="marca" alt="Agencia de Recaudaci&oacute;n de la Provincia de Buenos Aires" />
+</a>
+<!--inicia datos sesion-->
+<c:if test="true">
+
+<button type="button" class="btn-menuUsuario col align-self-end text-white float-right" aria-expanded="false" id="btn-datosSesion" >
+<i class="far fa-user-circle fa-2x" aria-hidden="true"></i>
+ <span class="d-none  d-sm-inline">20-13067594-9  ACOSTA LUIS ALBERTO</span>
+</button>
+<div class="collapse datosSesionApp" id="panelDatosSesionApp" style="display:none; " >
+<dl class="dl-horizontal"> 
+<dt>USUARIO</dt> 
+<dd>20-13067594-9 ACOSTA LUIS ALBERTO</dd> 
+<hr>
+
+<dt>PERFILES</dt> 
+   <dd> UsuarioExterno </dd> 
+
+<hr>
+
+
+</dl> 
+<a href="/DSISIC/Logout" class="btn-datosSesionApp"> CERRAR SESI&Oacute;N  <i class="fas fa-sign-out-alt" aria-hidden="true"></i> </a>                                            
+</div>
+</c:if>	
+
+</nav>
+
+<script>
+        $(document).ready(function(){
+       $("#btn-datosSesion").click(function(){
+        $("#panelDatosSesionApp").toggle();
+          });
+      });
+</script>
+
+ 	
+ 	<div id="menu">
+ 		
+
+ 
+
+
+
+
+
+<html>
+<head>
+<title></title>
+
+<script type="text/javascript"
+	src="/DSISIC/js/JSCookMenu/JSCookMenu.js"></script>
+
+
+<link rel="stylesheet"
+	href="/DSISIC/js/JSCookMenu/ThemeSIC/theme.css"
+	type="text/css">
+<script type="text/javascript"
+	src="/DSISIC/js/JSCookMenu/ThemeSIC/theme.js"></script>
+
+</head>
+<body>
+
+
+<script type="text/javascript">
+<!--
+var menuSic=[
+[ null ,'Ingresar Tramite' ,"javascript:irA('/jsp/index.jsp');" ,null,'Ingresar Tramite', 
+
+[ null ,'de Mensura' ,"javascript:irA('/jsp/index.jsp');" ,null,'de Mensura', 
+
+[ null ,'Proyecto Plano de Mensura' ,"javascript:irA('/proyecto.do?metodo=proyectoInicializar&cl=65');" ,null,'Proyecto Plano de Mensura'],
+[ null ,'Aprobacion Plano de Usucapión' ,"javascript:irA('/proyecto.do?metodo=proyectoInicializar&cl=66');" ,null,'Aprobacion Plano de Usucapión'],
+[ null ,'Desde trámite existente' ,"javascript:irA('/iniciarProyectoaPartirdeOtro.do?metodo=iniciarProyectoaPartirdeOtro');" ,null,'Desde trámite existente']],
+[ null ,'Certificado Catastral' ,"javascript:irA('/ingresarCCPorWeb.do?metodo=inicializarTramiteCCPorWeb');" ,null,'Certificado Catastral'],
+[ null ,'Descargo' ,"javascript:irA('/jsp/ingresarTramiteDescargo.jsp');" ,null,'Descargo'],
+[ null ,'Solicitud de' ,"javascript:irA('/jsp/index.jsp');" ,null,'Solicitud de', 
+
+[ null ,'Antecedentes' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=5&tp=45');" ,null,'Antecedentes'],
+[ null ,'Cédula' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=22&tp=1');" ,null,'Cédula'],
+[ null ,'Plancheta' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=23&tp=1');" ,null,'Plancheta'],
+[ null ,'DDJJ' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=24&tp=1');" ,null,'DDJJ'],
+[ null ,'Valuación Fiscal' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=26&tp=1');" ,null,'Valuación Fiscal'],
+[ null ,'Informe Catastral' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=39&tp=1');" ,null,'Informe Catastral'],
+[ null ,'Plano PH' ,"javascript:irA('/solicitudIngresarTramiteSASIC2.do?metodo=iniciarSolicitudTramiteSASIC&cl=25&tp=1');" ,null,'Plano PH']],
+[ null ,'DDJJ WEB' ,"javascript:irA('/jsp/index.jsp');" ,null,'DDJJ WEB', 
+
+[ null ,'DDJJ WEB Ampliacion' ,"javascript:irA('/recuperarDDJJWeb.do?metodo=recuperarDDJJWebAmpliacion');" ,null,'DDJJ WEB Ampliacion'],
+[ null ,'DDJJ WEB Ampliacion - Descargo' ,"javascript:irA('/jsp/recuperarDDJJWebArt84ConLogin.jsp');" ,null,'DDJJ WEB Ampliacion - Descargo'],
+[ null ,'DDJJ WEB Profesional Total' ,"javascript:irA('/recuperarDDJJWeb.do?metodo=recuperarDDJJWebProfesionalTotal');" ,null,'DDJJ WEB Profesional Total'],
+[ null ,'DDJJ WEB Profesional Ampliacion' ,"javascript:irA('/recuperarDDJJWeb.do?metodo=recuperarDDJJWebProfesionalAmpliacion');" ,null,'DDJJ WEB Profesional Ampliacion']],
+[ null ,'de Registración' ,"javascript:irA('/jsp/index.jsp');" ,null,'de Registración', 
+
+[ null ,'Art. 8vo sin Novedad - Formulario C' ,"javascript:irA('/ingresarTramiteRegistral.do?metodo=cargarIngresarTramiteRegistral&cl=8&tp=1');" ,null,'Art. 8vo sin Novedad - Formulario C'],
+[ null ,'Art. 8vo con Novedad - Total' ,"javascript:irA('/tramiteTransitorioAction.do?metodo=listTransitorios&c=8&t=2');" ,null,'Art. 8vo con Novedad - Total'],
+[ null ,'Subsistencia - Formulario B' ,"javascript:irA('/ingresarTramiteRegistral.do?metodo=cargarIngresarTramiteRegistral&cl=9&tp=1');" ,null,'Subsistencia - Formulario B'],
+[ null ,'Anexo II sin Novedades' ,"javascript:irA('/ingresarTramiteRegistral.do?metodo=cargarIngresarTramiteRegistral&cl=59&tp=1');" ,null,'Anexo II sin Novedades'],
+[ null ,'Anexo II con Novedades' ,"javascript:irA('/ingresarTramiteRegistral.do?metodo=cargarIngresarTramiteRegistral&cl=59&tp=2');" ,null,'Anexo II con Novedades'],
+[ null ,'CEP on line' ,"javascript:irA('/tramiteTransitorioAction.do?metodo=listTransitorios&c=3&t=1');" ,null,'CEP on line'],
+[ null ,'CEP on line PH sin modificación' ,"javascript:irA('/tramiteTransitorioAction.do?metodo=listTransitorios&c=3&t=3');" ,null,'CEP on line PH sin modificación']],
+[ null ,'Circular 10 de PH' ,"javascript:irA('/circular10PH.do?metodo=inicializarCir10PH');" ,null,'Circular 10 de PH'],
+[ null ,'Visación Previa PH' ,"javascript:irA('/circular10PH.do?metodo=inicializarCir10PH&vpph=si');" ,null,'Visación Previa PH'],
+[ null ,'de Georreferenciación' ,"javascript:irA('/jsp/index.jsp');" ,null,'de Georreferenciación', 
+
+[ null ,'Aprobación de Georreferenciación' ,"javascript:irA('/georef.do?metodo=inicializar');" ,null,'Aprobación de Georreferenciación'],
+[ null ,'desde trámite existente' ,"javascript:irA('/georef.do?metodo=reingresar');" ,null,'desde trámite existente']]],
+[ null ,'Consulta Trámite' ,"javascript:irA('/jsp/index.jsp');" ,null,'Consulta Trámite', 
+
+[ null ,'Por Nro Tramite/Oblea' ,"javascript:irA('/jsp/consultas/ingresarNroTramiteOblea.jsp');" ,null,'Por Nro Tramite/Oblea'],
+[ null ,'Por Pdo Pda/Nomenclatura' ,"javascript:irA('/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson');" ,null,'Por Pdo Pda/Nomenclatura'],
+[ null ,'Registraciones Parcelarias' ,"javascript:irA('/verificarFuncionFirmanteUE.do?opcion=consRegistracionesJson&metodo=verificarFuncionFirmanteUE');" ,null,'Registraciones Parcelarias'],
+[ null ,'CC - Solicitud profesional' ,"javascript:irA('/jsp/consultas/ingresarNroTramiteJson.jsp?metodo=consultaSolicitudProfesional');" ,null,'CC - Solicitud profesional']],
+[ null ,'Visados' ,"javascript:irA('/jsp/index.jsp');" ,null,'Visados', 
+
+[ null ,'Declaración de visados' ,"javascript:irA('/jsp/ingresarTramiteColegio.jsp');" ,null,'Declaración de visados'],
+[ null ,'Consulta visados' ,"javascript:irA('/obtenerOrdenConsulta.do?tipoBusqueda=porFechaVisados&metodo=obtenerOrdenConsulta');" ,null,'Consulta visados'],
+[ null ,'Eliminación' ,"javascript:irA('/jsp/ingresarNroVisado.jsp?metodo=visadoAEliminar');" ,null,'Eliminación']],
+[ null ,'Fondos' ,"javascript:irA('/jsp/index.jsp');" ,null,'Fondos', 
+
+[ null ,'Registración Tasa' ,"javascript:irA('/jsp/ingresarTimbrados.jsp');" ,null,'Registración Tasa'],
+[ null ,'Consulta Tasa' ,"javascript:irA('/consultaTimbrados.do?metodo=consultaTimbrados');" ,null,'Consulta Tasa'],
+[ null ,'Registracion Tasas X Terceros' ,"javascript:irA('/existeUsuarioEnPadron.do?metodo=existeUsuarioEnPadron&forward=successRegisTasas');" ,null,'Registracion Tasas X Terceros'],
+[ null ,'Asociar Gestor' ,"javascript:irA('/existeUsuarioEnPadron.do?metodo=existeUsuarioEnPadron');" ,null,'Asociar Gestor']],
+[ null ,'Comprobante Informativo' ,"javascript:irA('/jsp/index.jsp');" ,null,'Comprobante Informativo', 
+
+[ null ,'Generar' ,"javascript:irA('/jsp/index.jsp');" ,null,'Generar', 
+
+[ null ,'Nuevo' ,"javascript:irA('/iniciarTramiteMECN.do?metodo=iniciarTramiteAltaCI');" ,null,'Nuevo'],
+[ null ,'Nuevo X Terceros' ,"javascript:irA('/existeUsuarioEnPadron.do?metodo=existeUsuarioEnPadron&forward=successGeneracionComprobante');" ,null,'Nuevo X Terceros'],
+[ null ,'Desde tramite existente' ,"javascript:irA('/iniciarTramiteaPartirdeOtro.do?metodo=iniciarTramiteaPartirdeOtro');" ,null,'Desde tramite existente']],
+[ null ,'Consultar' ,"javascript:irA('/consultaComprobanteInformativo.do?metodo=listComprobantes');" ,null,'Consultar']],
+[ null ,'Mi Ficha' ,"javascript:irA('/obtenerFichaProfesional.do?metodo=obtenerFichaProfesional');" ,null,'Mi Ficha'],
+[ null ,'Cartografía Digital' ,"javascript:irA('javascript:window.open(\"http://carto.arba.gov.ar\");');" ,null,'Cartografía Digital'],
+[ null ,'Salir' ,"javascript:irA('/jsp/index.jsp');" ,null,'Salir', 
+
+[ '<img src="../images/menu/eject_green.png"/>' ,'Salir del Portal' ,"javascript:irA('/Logout');" ,null,'Salir del Portal'],
+[ '<img src="../images/menu/pause_green.png"/>' ,'Salir Aplicación' ,"javascript:irA('/logout.do');" ,null,'Salir Aplicación'],
+[ null ,'Salir a Portal Escribanos' ,"javascript:irA('http://www.arba.gov.ar/Aplicaciones/SIESBA.asp');" ,null,'Salir a Portal Escribanos']] ];
+-->
+</script>
+
+<div class="aplicacion-header">	
+	<div class="container">
+		<p>Sistema de Informacion Catastral</p>
+	</div>
+</div>
+		<div id="toolbar" class="ThemeSICMenu"></div><br>
+		<script type="text/javascript"><!--
+
+cmDraw ('toolbar', menuSic, 'hbr', cmThemeSIC);	
+--></script> <script type="text/javascript"
+			src="/DSISIC/js/net.js"></script> <script
+			type="text/javascript">
+function irA(url)
+			
+		{
+			var path = window.location.pathname; 
+			var firstSlashPosition = 0; 
+			var secondSlashPosition = path.indexOf('/',1); 
+			var contextRoot = path.slice(firstSlashPosition,secondSlashPosition); 
+
+			var appPath = 'http://' + window.location.host + contextRoot; 
+		
+			valor = url.substring(0,4); 
+
+			if (valor=='java') 
+			{
+			  eval(url);
+			  return;
+			}
+			if (valor != 'http' ) 
+						{pref=appPath;} 
+				   else {pref='' ;} 
+			
+			
+			location.href=pref+url;
+			}
+
+	
+</script>
+</body>
+</html>
+	
+	</div>
+	<div id="body" class="contPagina">
+		
+
+ 
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title></title>
+		
+
+	<script type="text/javascript" src="/DSISIC/js/net.js"></script>
+	<script type="text/javascript" src="/DSISIC/js/jquery/jquery-1.4.4.min.js"></script>
+	<script type="text/javascript" src="/DSISIC/js/jquery/ui/jquery-ui-1.8.9.custom.min.js"></script>
+<script>
+	history.go(+1);
+	
+	function cargarNoticias(){
+		var urlXML = '../obtenerNoticia.do?metodo=obtenerNoticia';
+		var params = "";
+		new net.ContentLoader(urlXML,cargarHTML,onError,"POST",params);		
+	}
+
+	//funcion de manejo de errores ---------------------------------------------
+	errorServidor = "<TABLE width='90%' cellSpacing='0' cellPadding='2' border='0' align='center' class='cuadrado fondoCeleste'><tr><td class='rojoAdvertencia'>Error Inesperado en el Servidor</td></tr></TABLE>";	
+	errorTransformacion = "<TABLE width='90%' cellSpacing='0' cellPadding='2' border='0' align='center' class='cuadrado fondoCeleste'><tr><td class='rojoAdvertencia'>Error Inesperado en la Transformacion del XSL</td></tr></TABLE>";	
+	function onError(){
+		var elementId = "contenido";
+		var objOutput = document.getElementById(elementId);
+		objOutput.innerHTML=errorServidor;
+	}
+	//funcion de callback -------------------------------------------------------	
+	function cargarHTML(){
+		var elementId = "contenido";
+		var objOutput = document.getElementById(elementId);
+		var info = this.req.responseText;
+		//alert(info);
+		if(info!=""){
+			objOutput.innerHTML=info;
+		}else{
+			//objOutput.innerHTML=errorTransformacion;
+			$("#encabezado").show();
+		}
+		$("#cargando").hide();
+	}
+</script>
+
+</head>
+<body>
+	
+	
+		<table id="encabezado" iwdth="100%" height="100%" id="tablaArriba" class="fondoGrande" border="0" style="display:none">
+
+		<tr>
+			<td valign="top" height="20%" colspan="4" class="textoCelesteIzquierda">
+				<b>Seleccione una opción del menú</b>
+			</td>
+		</tr>
+		
+			
+		<TR><TD colspan="4" width="100%" height="20"></TD></TR>		
+		</table>
+	
+
+		   
+			
+			
+			<div align="center"  class="contenedor1"  id="contenido">    
+			   
+			    	<img id="cargando" src="/DSISIC/images/cargando.gif" />
+			    </div>
+		 	    <script>
+			    	cargarNoticias();
+			    </script>
+	    
+    
+
+	 
+
+
+ <style>
+
+
+.modal-backdrop {
+  z-index: -1;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%;  /*Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+  
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+
+</style>
+
+ 
+<script type="text/javascript">
+function contextRoot (){
+	 var path = window.location.pathname;
+    var firstSlashPosition = 0;
+    var secondSlashPosition = path.indexOf('/',1);
+    return path.slice(firstSlashPosition,secondSlashPosition);
+}
+
+function salir() {
+			parent.location= contextRoot() + "/Logout" ;
+
+}
+</script>
+
+  
+	    <script>
+
+	    	$("#origen").dialog();
+	    </script>
+    	
+ 
+</body>
+</html>
+  	</div>
+  	<div id="footer">
+  		
+
+
+<footer class="bg-primary ">
+
+		<div class="row justify-content-center provincia no-gutters">
+			<a href="#" class="scrollup" title="subir">Subir</a><!-- 200113 SIFICA - TODO 40 -->
+	        <img src="https://www.arba.gov.ar/Recursos/Img/img_PiePagina.png" alt="Gobierno de la Provincia de Buenos Aires"/>
+	    </div>
+
+</footer>
+
+  	</div>
+  	
+</body>
+</html>
+
+
+</html>
+
+

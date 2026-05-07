@@ -1,0 +1,250 @@
+
+ 
+
+
+
+
+	
+	  
+	  
+	  
+	  
+	
+
+
+
+
+
+
+
+ 
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+	
+<title>ARBA</title>
+
+<!--estilos css -->
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+
+
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/jQuery/jquery-3.2.1/jquery-3.2.1.min.js"> </script> 
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/font-awesome/font-awesome-5.0.4/svg-with-js/js/fontawesome-all.min.js" defer></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+<!--popover js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/popper/popper-js-1.11.0/popper.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+
+<!--DataTables css-->
+<link href="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/css/dataTables.bootstrap4.min.css" rel="stylesheet" media="all"/>
+                
+<!--DataTable js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/dataTables.bootstrap4.min.js"></script>
+
+<head>
+
+  <title>DSISIC - Trámites - ERROR</title>
+  <base href="https://www16.arba.gov.ar/DSISIC/jsp/fallo.jsp">
+  </head>
+
+
+  
+
+
+<body class="bd_aplicaciones">
+	
+ 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+<link rel="stylesheet" href='https://www.arba.gov.ar/Recursos/Plantillas/Catastro/dsisic.css' type="text/css">
+
+
+ <nav class="navbar navbar-expand-lg navApps fixed-top bg-primary" >
+<!--inicia marca-->
+<a href="http://www.arba.gov.ar" title="P&aacute;gina de inicio del sitio web ARBA" accesskey="0">
+<img src="https://www.arba.gov.ar/Recursos/Img/logoARBA-bl.svg" id="marca" alt="Agencia de Recaudaci&oacute;n de la Provincia de Buenos Aires" />
+</a>
+<!--inicia datos sesion-->
+<c:if test="true">
+
+<button type="button" class="btn-menuUsuario col align-self-end text-white float-right" aria-expanded="false" id="btn-datosSesion" >
+<i class="far fa-user-circle fa-2x" aria-hidden="true"></i>
+ <span class="d-none  d-sm-inline">20-13067594-9  ACOSTA LUIS ALBERTO</span>
+</button>
+<div class="collapse datosSesionApp" id="panelDatosSesionApp" style="display:none; " >
+<dl class="dl-horizontal"> 
+<dt>USUARIO</dt> 
+<dd>20-13067594-9 ACOSTA LUIS ALBERTO</dd> 
+<hr>
+
+<dt>PERFILES</dt> 
+   <dd> UsuarioExterno </dd> 
+
+<hr>
+
+
+</dl> 
+<a href="/DSISIC/Logout" class="btn-datosSesionApp"> CERRAR SESI&Oacute;N  <i class="fas fa-sign-out-alt" aria-hidden="true"></i> </a>                                            
+</div>
+</c:if>	
+
+</nav>
+
+<script>
+        $(document).ready(function(){
+       $("#btn-datosSesion").click(function(){
+        $("#panelDatosSesionApp").toggle();
+          });
+      });
+</script>
+
+ 	  
+<div class="aplicacion-header">
+<div class="container">  
+  		<p>Sistema de Informacion Catastral</p>
+</div></div>
+  <br> <br> <br>
+ 	
+	<div id="body" class="contPagina ">
+		
+
+
+ 
+ <script type="text/javascript"	src="https://code.jquery.com/jquery-3.3.1.js"></script>
+
+<SCRIPT>
+	function contextRoot (){
+			 var path = window.location.pathname;
+	         var firstSlashPosition = 0;
+	         var secondSlashPosition = path.indexOf('/',1);
+	         return path.slice(firstSlashPosition,secondSlashPosition);
+	}
+	
+	function botonVolver() {
+			if (window.history.length == 0){
+				window.close();
+			}else {			
+				jsVolver = 	"/jsp/consultas/consultaFechas.jsp";
+				if (jsVolver == "cerrarVentana"){
+					window.close();
+				}else{
+					if (jsVolver!=""){
+			  			parent.location= contextRoot() + jsVolver ;
+				 	}else {
+					 	parent.location= contextRoot() + "/jsp/index.jsp" ;
+				 	}
+				}				 	
+			 }
+			 	
+	}
+	
+	function goBack() {
+		
+		parent.location= document.referrer;
+	}	
+</SCRIPT>
+ 
+<html><head> 
+ 
+<script> 
+
+$(document).ready(function(){
+	 		
+			document.forms[0].elements["bVolver"].focus();
+	 
+});
+
+//esto es para que no puedan apretar el boton back
+ history.go(+1);
+</script>
+<title></title></head> 
+<body class="fondoBlanco">
+<form>
+<br>
+  <table width="100%" height="100%" align="center" class="textoTabla sinPadding" >    
+      <tr><td height="25"  colspan="3" class="azulAjustado"> Error Inesperado</td></tr>
+  	  				   
+			 
+				<tr>
+			      <td  width="10%" height="20" class="celeton"><b>
+			        Método</b></td>
+			      <td  width="90%" height="20" class="celeton"><b>
+			        Mensaje</b></td>
+			        
+				 </tr>	
+	       		  <tr>
+	       		  	<td height="20" colspan="1" class="blanco">  	</td>	       		  
+	       		  	<td  height="20" colspan="2" class="blanco"> Ocurrió un error inesperado, el código de transacción es: 4FYNAHP  </td>
+	       		   </tr>
+	       		  
+								       	
+	      	
+
+		 
+		 <tr>
+		 	<td  height="50" colspan="3" align="center">
+		 		<input type="button" name="bVolver" value="Volver" onclick="botonVolver();" class="botoneraLogin">
+		 	</td>
+		 </tr>
+		 
+	
+	  <tr>
+	      <TD>&nbsp; </TD>
+      </tr>	 
+    </table> 
+	</form>       
+   </body>
+	
+</html>
+
+ 
+  	</div>
+  	<div id="footer">
+  		
+
+
+<footer class="bg-primary ">
+
+		<div class="row justify-content-center provincia no-gutters">
+			<a href="#" class="scrollup" title="subir">Subir</a><!-- 200113 SIFICA - TODO 40 -->
+	        <img src="https://www.arba.gov.ar/Recursos/Img/img_PiePagina.png" alt="Gobierno de la Provincia de Buenos Aires"/>
+	    </div>
+
+</footer>
+
+  	</div>
+  	
+</body>
+</html>
+
+
+
+		

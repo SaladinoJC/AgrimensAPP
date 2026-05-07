@@ -1,0 +1,193 @@
+
+
+
+  
+  
+    
+    
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+	
+<title>ARBA</title>
+
+<!--estilos css -->
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+
+
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/jQuery/jquery-3.2.1/jquery-3.2.1.min.js"> </script> 
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/font-awesome/font-awesome-5.0.4/svg-with-js/js/fontawesome-all.min.js" defer></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+<!--popover js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/popper/popper-js-1.11.0/popper.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/js/mostrarOcultarMenuDatosSesion.js"></script>
+
+<!--DataTables css-->
+<link href="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/css/dataTables.bootstrap4.min.css" rel="stylesheet" media="all"/>
+                
+<!--DataTable js-->
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://www.arba.gov.ar/Recursos/lib/datatables.net/dataTablesBootstrap4/js/dataTables.bootstrap4.min.js"></script>
+
+<head>
+
+  <title>DSISIC-Login</title>
+  <base href="https://www16.arba.gov.ar/DSISIC/jsp/opcionesLogin.jsp">
+  </head>
+
+
+  
+
+
+<body class="bd_aplicaciones">
+	
+ 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+<link href="https://www.arba.gov.ar/Recursos/lib/bootstrap/bootstrap-4.0.0-dist/css/bootstrap-theme-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/plantillas/bootstrap-4.0.0-dist-Arba.min.css" rel="stylesheet" media="all" /> 
+<link href="https://www.arba.gov.ar/Recursos/lib/scrollUp/scrollUp.css" rel="stylesheet" type="text/css" media="all"/>
+<link rel="stylesheet" href='https://www.arba.gov.ar/Recursos/Plantillas/Catastro/dsisic.css' type="text/css">
+
+
+ <nav class="navbar navbar-expand-lg navApps fixed-top bg-primary" >
+<!--inicia marca-->
+<a href="http://www.arba.gov.ar" title="P&aacute;gina de inicio del sitio web ARBA" accesskey="0">
+<img src="https://www.arba.gov.ar/Recursos/Img/logoARBA-bl.svg" id="marca" alt="Agencia de Recaudaci&oacute;n de la Provincia de Buenos Aires" />
+</a>
+<!--inicia datos sesion-->
+<c:if test="true">
+
+<button type="button" class="btn-menuUsuario col align-self-end text-white float-right" aria-expanded="false" id="btn-datosSesion" >
+<i class="far fa-user-circle fa-2x" aria-hidden="true"></i>
+ <span class="d-none  d-sm-inline">20-13067594-9  ACOSTA LUIS ALBERTO</span>
+</button>
+<div class="collapse datosSesionApp" id="panelDatosSesionApp" style="display:none; " >
+<dl class="dl-horizontal"> 
+<dt>USUARIO</dt> 
+<dd>20-13067594-9 ACOSTA LUIS ALBERTO</dd> 
+<hr>
+
+<dt>PERFILES</dt> 
+   <dd> UsuarioExterno </dd> 
+
+<hr>
+
+
+</dl> 
+<a href="/DSISIC/Logout" class="btn-datosSesionApp"> CERRAR SESI&Oacute;N  <i class="fas fa-sign-out-alt" aria-hidden="true"></i> </a>                                            
+</div>
+</c:if>	
+
+</nav>
+
+<script>
+        $(document).ready(function(){
+       $("#btn-datosSesion").click(function(){
+        $("#panelDatosSesionApp").toggle();
+          });
+      });
+</script>
+
+ 	  
+<div class="aplicacion-header">
+<div class="container">  
+  		<p>Sistema de Informacion Catastral</p>
+</div></div>
+  <br> <br> <br>
+ 	
+	<div id="body" class="contPagina ">
+		
+ 
+
+
+
+<html>
+<body class="fondoBlanco">
+   
+
+<form name="opcionesLoginForm" method="post" action="/DSISIC/opcionesLogin.do">	
+ <input type="hidden" name="metodo" value="opcionesLogin"> 
+ <INPUT type="hidden" name="usuario" value="20130675949" > 
+ <INPUT type="hidden" name="rol" value="UsuarioExterno" > 
+<div class="container pb-5 contPagina" > 
+
+		<div class="card bg-gradiente p-4 border-light shadow rounded-sm h-100">			
+
+			
+				<div class="card bg-gradiente p-4 border-light shadow rounded-sm h-100">	
+					<h2 class="h4"> <i class="fas fa-exclamation-triangle"></i> Otro usuario ha iniciado una sesión con el mismo ID de usuario </h2>
+					<h2 class="h5 text-dark mt-4">Seleccioná una de las  siguientes opciones</h2>
+					
+					<div class="custom-control custom-radio">
+						<input type="radio" id="customRadio1" name=opcion value="entrar" class="custom-control-input">
+						<label class="custom-control-label text-dark" for="customRadio1">Cerrá la sesión del otro usuario </label>
+					</div>
+					<div class="custom-control custom-radio">
+						<input type="radio" id="customRadio2" name="opcion" value="salir" class="custom-control-input">
+						<label class="custom-control-label text-dark" for="customRadio2">Volvé a la página de inicio de sesión y entrá con otro ID de usuario </label>
+					</div>
+					<div class="custom-control custom-radio">
+						<input type="radio" id="customRadio3" name="opcion" value="salir" class="custom-control-input">
+						<label class="custom-control-label text-dark" for="customRadio3">Volvé a la página de inicio de sesión y esperá a que el otro usuario con el mismo ID  cierre la sesión</label>
+					</div>
+					<button type="submit" value="Submit" class="btn btn-outline-warning mt-4">Continuar</button> 
+				</div>
+			</div>
+	</div>
+</form>
+
+</body>
+</html>
+  	</div>
+  	<div id="footer">
+  		
+
+
+<footer class="bg-primary ">
+
+		<div class="row justify-content-center provincia no-gutters">
+			<a href="#" class="scrollup" title="subir">Subir</a><!-- 200113 SIFICA - TODO 40 -->
+	        <img src="https://www.arba.gov.ar/Recursos/Img/img_PiePagina.png" alt="Gobierno de la Provincia de Buenos Aires"/>
+	    </div>
+
+</footer>
+
+  	</div>
+  	
+</body>
+</html>
+
