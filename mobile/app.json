@@ -40,7 +40,6 @@
     "plugins": [
       "expo-secure-store",
       "expo-local-authentication",
-      "expo-background-fetch",
       "expo-task-manager",
       "expo-notifications",
       "@react-native-community/datetimepicker",

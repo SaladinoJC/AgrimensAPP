@@ -12,7 +12,7 @@ import { getTramites, getTotalCount } from '../db/database';
 import { TramiteCard } from './ui/TramiteCard';
 import { TramiteDetailModal } from './TramiteDetailModal';
 import { usePagination } from '../hooks/usePagination';
-import { LoadingTramitesSpinner } from './LoadingTramitesSpinner';
+import { LoadingTramitesSpinner } from './ui/LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
 const C_CARD = "#1e2a42";

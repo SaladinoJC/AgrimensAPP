@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,7 +8,7 @@ import {
   Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as BackgroundFetch from 'expo-background-fetch';
+import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,15 +24,14 @@ import { Map, User } from 'lucide-react-native';
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
 const BACKGROUND_FETCH_TASK = 'background-sync-arba';
-const C_SURFACE = "#182136";
 const C_TEXT = "#eceff1";
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   try {
     await syncArbaHeadless();
-    return BackgroundFetch.BackgroundFetchResult.NewData;
+    return BackgroundTask.BackgroundTaskResult.Success;
   } catch (error) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+    return BackgroundTask.BackgroundTaskResult.Failed;
   }
 });
 
@@ -41,7 +40,7 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
-    shouldShowBanner: true, 
+    shouldShowBanner: true,
     shouldShowList: true,
   }),
 });
@@ -60,7 +59,6 @@ export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showWebView, setShowWebView] = useState(false);
-  const webViewSyncRef = useRef<any>(null);
 
   // Inicializar BD al montar
   useEffect(() => {
@@ -71,9 +69,8 @@ export default function App() {
   useEffect(() => {
     const checkSavedSession = async () => {
       try {
-        const savedLogin = await AsyncStorage.getItem('isLoggedIn');
-        // Si está guardada, el store ya se actualizó al cargar useStore desde SecureStore
-        // En un caso real, aquí cargaríamos desde SecureStore
+        await AsyncStorage.getItem('isLoggedIn');
+        // El store ya se actualizó al cargar useStore desde SecureStore
       } catch (error) {
         console.error('Error checking saved session:', error);
       }
@@ -88,10 +85,8 @@ export default function App() {
   useEffect(() => {
     const setupBackgroundFetch = async () => {
       try {
-        await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+        await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
           minimumInterval: 3 * 60 * 60, // 3 horas
-          stopOnTerminate: false,
-          startOnBoot: true,
         });
       } catch (error) {
         console.error('Background fetch setup error:', error);
@@ -156,39 +151,25 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
-    setShowProfileModal(false);
-  };
+  // Función para decidir qué renderizar según el estado de la app
+  const renderContent = () => {
+    if (!dbReady) {
+      return <View style={styles.loaderContainer} />;
+    }
 
-  if (!dbReady) {
+    if (!isLoggedIn) {
+      return <LoginScreen onLoginSuccess={() => {}} />;
+    }
+
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={C_BG} />
-        <View style={styles.loaderContainer} />
-      </SafeAreaView>
-    );
-  }
+      <>
+        {/* Header con botón de perfil */}
+        <View style={styles.appBar}>
+          <View style={styles.appBarLeft}>
+            <Map color={C_PRIMARY} size={24} />
+            <Text style={styles.appBarTitle}>AgrimensAPP</Text>
+          </View>
 
-  if (!isLoggedIn) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={C_BG} />
-        <LoginScreen onLoginSuccess={() => {}} />
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={C_BG} />
-
-      {/* Header con botón de perfil */}
-      <View style={styles.header}>
-        <View style={styles.appBarLeft}>
-          <Map color={C_PRIMARY} size={24} />
-          <Text style={styles.appBarTitle}> AgrimensAPP</Text>
-        </View>
-        <View style={styles.headerContent}>
           <TouchableOpacity
             style={styles.profileButton}
             onPress={() => setShowProfileModal(true)}
@@ -196,26 +177,33 @@ export default function App() {
             <User size={24} color={C_PRIMARY} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Dashboard principal */}
-      <DashboardScreen onSync={handleSync} onSyncCancel={handleSyncCancel} />
+        {/* Dashboard principal */}
+        <DashboardScreen onSync={handleSync} onSyncCancel={handleSyncCancel} />
 
-      {/* Modal de perfil/credenciales */}
-      <CredentialsModal
-        visible={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        onLogout={handleLogout}
-      />
-
-      {/* WebView oculto para sincronización interactiva */}
-      {showWebView && (
-        <ArbaWebView
-          cuit={cuit}
-          cit={cit}
-          onSyncComplete={handleSyncComplete}
+        {/* Modal de perfil/credenciales */}
+        <CredentialsModal
+          visible={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          onLogout={() => setShowProfileModal(false)}
         />
-      )}
+
+        {/* WebView oculto para sincronización interactiva */}
+        {showWebView && (
+          <ArbaWebView
+            cuit={cuit}
+            cit={cit}
+            onSyncComplete={handleSyncComplete}
+          />
+        )}
+      </>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={C_BG} />
+      {renderContent()}
     </SafeAreaView>
   );
 }
@@ -225,29 +213,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: C_BG,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomColor: '#182136',
-    borderBottomWidth: 1,
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  profileButton: {
-    padding: 8,
-  },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  appBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, backgroundColor: C_SURFACE, alignItems: 'center' },
-  appBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  appBarTitle: { color: C_TEXT, fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
+  appBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: C_BG,
+    alignItems: 'center',
+    borderBottomColor: '#182136',
+    borderBottomWidth: 1,
+  },
+  appBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  appBarTitle: {
+    color: C_TEXT,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  profileButton: {
+    padding: 8,
+  },
 });
