@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "verify:dsisic-parser": "node ./scripts/verify-dsisic-parser.js"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "8.4.4",

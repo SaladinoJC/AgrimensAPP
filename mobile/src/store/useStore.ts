@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Novedad } from '../novedades/types';
 
 interface AppState {
   cuit: string;
@@ -9,8 +10,8 @@ interface AppState {
   setIsSyncing: (status: boolean) => void;
   
   // Novedades (Alertas de cambios de estado)
-  novedades: Array<{nro: string, viejo: string, nuevo: string}>;
-  setNovedades: (novedades: Array<{nro: string, viejo: string, nuevo: string}>) => void;
+  novedades: Novedad[];
+  setNovedades: (novedades: Novedad[]) => void;
   clearNovedades: () => void;
 }
 
