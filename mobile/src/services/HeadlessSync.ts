@@ -1,6 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
 import { upsertTramites } from '../db/database';
+import { normalizarRango, sincronizarPorFecha } from '../sync/sincronizacion';
+import { SyncError } from '../sync/types';
+import { tieneNovedades, textoNotificacionAgregada } from '../novedades/policy';
 
 let syncAbortController: AbortController | null = null;
 
@@ -12,7 +15,7 @@ export const syncArbaHeadless = async (abortSignal?: AbortSignal) => {
 
     // React Native's fetch automatically handles cookies natively.
     // 1. GET inicial a DSISIC
-    const res1 = await fetch('https://www16.arba.gov.ar/DSISIC/', { signal: abortSignal });
+    const res1 = await fetch('https://www16.arba.gov.ar/DSISIC/');
     const html1 = await res1.text();
     const ltMatch = html1.match(/name="lt"\s+value="([^"]+)"/);
     
@@ -27,16 +30,14 @@ export const syncArbaHeadless = async (abortSignal?: AbortSignal) => {
         body: bodySSO,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        signal: abortSignal
+        }
       });
       
       // 3. Asignar Rol
       await fetch('https://www16.arba.gov.ar/DSISIC/asignarRol.do', {
         method: 'POST',
         body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        signal: abortSignal
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
     }
 
@@ -47,14 +48,13 @@ export const syncArbaHeadless = async (abortSignal?: AbortSignal) => {
     const strHasta = today.toISOString().split('T')[0];
     const strDesde = yearAgo.toISOString().split('T')[0];
 
-    await fetch('https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson', { signal: abortSignal });
+    await fetch('https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson');
     
     const bodyFechas = `opcion=FEC&metodo=porFechaPdoPdaJson&tipoBusqueda=FEC&fechaDesde=${strDesde}&fechaHasta=${strHasta}`;
     const resFechas = await fetch('https://www16.arba.gov.ar/DSISIC/PorFechaJson.do', {
       method: 'POST',
       body: bodyFechas,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: abortSignal
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
     const buffer = await resFechas.arrayBuffer();
@@ -78,22 +78,7 @@ export const syncArbaHeadless = async (abortSignal?: AbortSignal) => {
       }
     }
   } catch (e) {
-    if (e instanceof Error && e.name === 'AbortError') {
-      console.log("Sync cancelled by user");
-    } else {
-      console.log("Background sync error:", e);
-    }
-  }
-};
-
-export const setSyncAbortController = (controller: AbortController | null) => {
-  syncAbortController = controller;
-};
-
-export const cancelSync = () => {
-  if (syncAbortController) {
-    syncAbortController.abort();
-    syncAbortController = null;
+    console.log("Background sync error:", e);
   }
 };
 

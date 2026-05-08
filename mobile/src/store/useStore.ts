@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Novedad } from '../novedades/types';
 
 interface AppState {
   // Autenticación
@@ -22,7 +23,7 @@ interface AppState {
   pageSize: number;
   
   // Novedades
-  novedades: Array<{nro: string, viejo: string, nuevo: string}>;
+
   
   // Métodos
   setCuit: (cuit: string) => void;
@@ -37,7 +38,10 @@ interface AppState {
   setFilterPartida: (partida: string) => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
-  setNovedades: (novedades: Array<{nro: string, viejo: string, nuevo: string}>) => void;
+  
+  // Novedades (Alertas de cambios de estado)
+  novedades: Novedad[];
+  setNovedades: (novedades: Novedad[]) => void;
   clearNovedades: () => void;
   clearFilters: () => void;
   logout: () => void;
