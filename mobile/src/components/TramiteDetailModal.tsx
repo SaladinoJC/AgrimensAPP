@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { X, Download, Share2, FileText } from 'lucide-react-native';

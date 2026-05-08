@@ -5,9 +5,9 @@ import {
   Text,
   TouchableOpacity,
   Modal,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SecureStore from 'expo-secure-store';
 import { useStore } from '../store/useStore';
