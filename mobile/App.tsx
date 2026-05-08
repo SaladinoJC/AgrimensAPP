@@ -7,13 +7,11 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as BackgroundFetch from 'expo-background-fetch';
-import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import { useStore } from './src/store/useStore';
 import { initDB, upsertTramites, getTramites, getStats } from './src/db/database';
 import { ArbaWebView } from './src/services/ArbaWebView';
-import { syncArbaHeadless } from './src/services/HeadlessSync';
+import { registerBackgroundSync } from './src/services/BackgroundSyncRegistration';
 import { parseTramitesFromPorFechaHtml } from './src/sync/parserDsisic';
 import { normalizarRango, sincronizarPorFecha } from './src/sync/sincronizacion';
 import { autenticarAccesoLocal } from './src/authLocal/authLocal';
@@ -31,17 +29,6 @@ const C_AMBER = "#ffca28";
 const C_GREY = "#78909c";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
-
-const BACKGROUND_FETCH_TASK = 'background-sync-arba';
-
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  try {
-    await syncArbaHeadless();
-    return BackgroundFetch.BackgroundFetchResult.NewData;
-  } catch (error) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
-  }
-});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -107,14 +94,7 @@ export default function App() {
         }
         
         try {
-          const { status } = await Notifications.requestPermissionsAsync();
-          if (status === 'granted') {
-            await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-              minimumInterval: 60 * 60 * 3, // 3 hours
-              stopOnTerminate: false,
-              startOnBoot: true,
-            });
-          }
+          await registerBackgroundSync();
         } catch (pushErr) {
           console.log("Push init error", pushErr);
         }
