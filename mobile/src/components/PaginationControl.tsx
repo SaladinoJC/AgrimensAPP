@@ -3,10 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useStore } from '../store/useStore';
 
-const C_SURFACE = "#182136";
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";
-const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
 
 interface PaginationControlProps {
@@ -20,7 +18,8 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
 }) => {
   const { currentPage, setCurrentPage } = useStore();
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
 
@@ -42,13 +41,15 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
         style={[styles.button, !hasPrevPage && styles.buttonDisabled]}
         onPress={handlePrevious}
         disabled={!hasPrevPage}
+        activeOpacity={0.7}
+        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
       >
         <ChevronLeft size={30} color={hasPrevPage ? C_PRIMARY : C_TEXT2} />
       </TouchableOpacity>
 
       <View style={styles.pageInfo}>
         <Text style={styles.pageText}>
-          Página  {currentPage} de {totalPages}
+          Página {currentPage} de {totalPages}
         </Text>
       </View>
 
@@ -56,6 +57,8 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
         style={[styles.button, !hasNextPage && styles.buttonDisabled]}
         onPress={handleNext}
         disabled={!hasNextPage}
+        activeOpacity={0.7}
+        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
       >
         <ChevronRight size={30} color={hasNextPage ? C_PRIMARY : C_TEXT2} />
       </TouchableOpacity>
@@ -82,8 +85,12 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   pageInfo: {
-    // flex: 1,
     alignItems: 'center',
   },
-  pageText: { color: C_TEXT2, fontSize: 14, marginHorizontal: 20 },
+  pageText: { 
+    color: C_TEXT2, 
+    fontSize: 14, 
+    marginHorizontal: 20,
+    fontWeight: '500',
+  },
 });

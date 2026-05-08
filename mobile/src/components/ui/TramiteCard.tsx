@@ -8,7 +8,6 @@ import {
 import { ChevronRight } from 'lucide-react-native';
 
 const C_CARD = "#1e2a42";
-const C_SURFACE = "#182136";
 const C_PRIMARY = "#00bfa5";
 const C_ACCENT = "#4fc3f7";
 const C_TEXT = "#eceff1";
@@ -19,28 +18,30 @@ const C_RED = "#ef5350";
 const C_GREY = "#78909c";
 const C_BG = "#0f1724";
 
-const getColor = (estado: string) => {
+const getColor = (estado?: string) => {
+  if (!estado) return C_GREY;
   const e = estado.toUpperCase();
   if (e.includes("RECHAZ")) return C_RED;
   if (e.includes("FINALIZ") || e.includes("ENTREGADO")) return C_GREEN;
-  if (e.includes("EN CURSO") || e.includes("EN TRAMITE") || e.includes("PENDIENTE")) return C_AMBER;
+  if (e.includes("EN CURSO") || e.includes("EN TRAMITE") || e.includes("PENDIENTE") || e.includes("OBSERVADO")) return C_AMBER;
   return C_GREY;
 };
 
+interface Tramite {
+  nroExpediente: string;
+  tipo_tramite: string;
+  partido: string;
+  partida: string;
+  fecha_movimiento?: string;
+  estado?: string;
+}
+
 interface TramiteCardProps {
-  tramite: any;
+  tramite: Tramite;
   onPress: () => void;
 }
 
 export const TramiteCard: React.FC<TramiteCardProps> = ({ tramite, onPress }) => {
-  const getStatusColor = (status: string) => {
-    const upper = status.toUpperCase();
-    if (upper.includes('FINALIZADO') || upper.includes('ENTREGADO')) return C_GREEN;
-    if (upper.includes('RECHAZADO')) return C_RED;
-    if (upper.includes('OBSERVADO')) return C_AMBER;
-    return C_ACCENT;
-  };
-  
   const col = getColor(tramite.estado);
   const fgCol = col === C_RED ? "#ffffff" : C_BG;
 
@@ -54,8 +55,8 @@ export const TramiteCard: React.FC<TramiteCardProps> = ({ tramite, onPress }) =>
         <Text style={styles.expediente}>#{tramite.nroExpediente}</Text>
         <ChevronRight size={20} color={C_TEXT2} />
       </View>
-        <Text style={styles.cardSubtitle}>{tramite.tipo_tramite}</Text>
-
+      
+      <Text style={styles.cardSubtitle}>{tramite.tipo_tramite}</Text>
 
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>Partido:</Text>
@@ -75,10 +76,10 @@ export const TramiteCard: React.FC<TramiteCardProps> = ({ tramite, onPress }) =>
       )}
 
       <View style={styles.badgeContainer}>
-          <View style={[styles.badge, { backgroundColor: col }]}>
-            <Text style={[styles.badgeText, { color: fgCol }]}>{tramite.estado || '—'}</Text>
-          </View>
+        <View style={[styles.badge, { backgroundColor: col }]}>
+          <Text style={[styles.badgeText, { color: fgCol }]}>{tramite.estado || '—'}</Text>
         </View>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -104,20 +105,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: C_PRIMARY,
   },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  status: {
+  cardSubtitle: {
+    color: C_ACCENT,
     fontSize: 13,
-    fontWeight: '600',
+    marginBottom: 12,
   },
   infoRow: {
     flexDirection: 'row',
@@ -136,9 +127,17 @@ const styles = StyleSheet.create({
     flex: 0.6,
     textAlign: 'right',
   },
-  badgeContainer: { marginTop: 10, alignItems: 'flex-start' },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { fontWeight: 'bold', fontSize: 11 },
-  cardTitle: { color: C_TEXT, fontWeight: 'bold', fontSize: 15 },
-  cardSubtitle: { color: C_ACCENT, fontSize: 13, marginTop: 4 },
+  badgeContainer: {
+    marginTop: 10,
+    alignItems: 'flex-start',
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontWeight: 'bold',
+    fontSize: 11,
+  },
 });

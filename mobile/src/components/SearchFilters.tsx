@@ -8,13 +8,12 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../store/useStore';
-import { Search, Filter, X, Calendar, Trash } from 'lucide-react-native';
+import { Search, X, Calendar, Trash } from 'lucide-react-native';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";
-const C_ACCENT = "#4fc3f7";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
 
@@ -40,22 +39,42 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
   const [showDesdeModal, setShowDesdeModal] = useState(false);
   const [showHastaModal, setShowHastaModal] = useState(false);
 
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleDesdeChange = (event: any, selectedDate?: Date) => {
-    if (event.type === 'set' && selectedDate) {
-      const dateString = selectedDate.toISOString().split('T')[0];
-      setFilterDesde(dateString);
-      onSearch();
+    if (event.type === 'dismissed') {
+      setShowDesdeModal(false);
+      return;
     }
-    setShowDesdeModal(false);
+
+    if (event.type === 'set' && selectedDate) {
+      setFilterDesde(formatLocalDate(selectedDate));
+      setShowDesdeModal(false);
+      onSearch(); 
+    }
   };
 
   const handleHastaChange = (event: any, selectedDate?: Date) => {
-    if (event.type === 'set' && selectedDate) {
-      const dateString = selectedDate.toISOString().split('T')[0];
-      setFilterHasta(dateString);
-      onSearch();
+    if (event.type === 'dismissed') {
+      setShowHastaModal(false);
+      return;
     }
-    setShowHastaModal(false);
+
+    if (event.type === 'set' && selectedDate) {
+      setFilterHasta(formatLocalDate(selectedDate));
+      setShowHastaModal(false);
+      onSearch(); 
+    }
+  };
+
+  const handleClear = () => {
+    clearFilters();
+    onSearch(); 
   };
 
   return (
@@ -72,7 +91,10 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
           onSubmitEditing={onSearch}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
+          <TouchableOpacity 
+            onPress={() => setSearchQuery('')}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          >
             <X size={20} color={C_TEXT2} />
           </TouchableOpacity>
         )}
@@ -82,6 +104,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowDesdeModal(true)}
+          activeOpacity={0.7}
         >
           <Calendar size={16} color={C_PRIMARY} />
           <Text style={styles.dateButtonText}>
@@ -92,6 +115,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowHastaModal(true)}
+          activeOpacity={0.7}
         >
           <Calendar size={16} color={C_PRIMARY} />
           <Text style={styles.dateButtonText}>
@@ -121,6 +145,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
         <TouchableOpacity
           style={styles.searchButton}
           onPress={onSearch}
+          activeOpacity={0.8}
         >
           <Search size={16} color={C_BG} />
           <Text style={styles.searchButtonText}>BUSCAR</Text>
@@ -128,7 +153,8 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
 
         <TouchableOpacity
           style={styles.clearButton}
-          onPress={clearFilters}
+          onPress={handleClear}
+          activeOpacity={0.8}
         >
           <Trash size={16} color={C_TEXT} />
           <Text style={styles.clearButtonText}>LIMPIAR</Text>
@@ -137,7 +163,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
 
       {showDesdeModal && (
         <DateTimePicker
-          value={filterDesde ? new Date(filterDesde) : new Date()}
+          value={filterDesde ? new Date(filterDesde + 'T12:00:00') : new Date()}
           mode="date"
           onChange={handleDesdeChange}
         />
@@ -145,7 +171,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
 
       {showHastaModal && (
         <DateTimePicker
-          value={filterHasta ? new Date(filterHasta) : new Date()}
+          value={filterHasta ? new Date(filterHasta + 'T12:00:00') : new Date()}
           mode="date"
           onChange={handleHastaChange}
         />

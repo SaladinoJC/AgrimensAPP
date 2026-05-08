@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SecureStore from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store';
 import { useStore } from '../store/useStore';
 import { X, LogOut, User } from 'lucide-react-native';
 
@@ -20,6 +20,7 @@ const C_PRIMARY = "#00bfa5";
 const C_RED = "#ef5350";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
+const C_WHITE = "#ffffff";
 
 interface CredentialsModalProps {
   visible: boolean;
@@ -39,9 +40,14 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
       'Cerrar Sesión',
       '¿Estás seguro de que deseas cerrar la sesión?',
       [
-        { text: 'Cancelar', onPress: () => {}, style: 'cancel' },
+        { 
+          text: 'Cancelar', 
+          onPress: () => {}, 
+          style: 'cancel' 
+        },
         {
           text: 'Cerrar Sesión',
+          style: 'destructive', 
           onPress: async () => {
             try {
               await AsyncStorage.removeItem('isLoggedIn');
@@ -54,7 +60,6 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
               Alert.alert('Error', 'No se pudo cerrar la sesión');
             }
           },
-          style: 'destructive',
         },
       ]
     );
@@ -65,7 +70,11 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mi Perfil</Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity 
+            onPress={onClose} 
+            activeOpacity={0.7}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          >
             <X size={28} color={C_TEXT} />
           </TouchableOpacity>
         </View>
@@ -98,8 +107,9 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
+          activeOpacity={0.8}
         >
-          <LogOut size={20} color="#fff" />
+          <LogOut size={20} color={C_WHITE} />
           <Text style={styles.logoutButtonText}>CERRAR SESIÓN</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -205,7 +215,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoutButtonText: {
-    color: '#fff',
+    color: C_WHITE,
     fontWeight: 'bold',
     marginLeft: 8,
     fontSize: 16,

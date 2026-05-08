@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { RefreshCw, X } from 'lucide-react-native';
 import { useStore } from '../../store/useStore';
 
@@ -22,46 +19,36 @@ export const SyncButton: React.FC<SyncButtonProps> = ({ onSync, onCancel }) => {
     <TouchableOpacity
       style={[styles.fab, isSyncing && styles.buttonSyncing]}
       onPress={isSyncing ? onCancel : onSync}
-      disabled={false}
+      activeOpacity={0.8}
     >
       {isSyncing ? (
-        <>
-          {/* <ActivityIndicator color={C_BG} size={20} /> */}
-          <X size={20} color={C_BG} />
-        </>
+        <X size={24} color={C_BG} />
       ) : (
-        <>
-          <RefreshCw size={20} color={C_BG} />
-        </>
+        <RefreshCw size={24} color={C_BG} />
       )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: 60,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: C_PRIMARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
   buttonSyncing: {
     backgroundColor: C_RED,
-  },
-  text: {
-    color: C_BG,
-    marginHorizontal: 8,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  textCancel: {
-    fontSize: 12,
-  },
-  fab: { 
-    position: 'absolute', 
-    bottom: 60, 
-    right: 24, 
-    width: 56, 
-    height: 56, 
-    borderRadius: 28, 
-    backgroundColor: C_PRIMARY, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    elevation: 5, 
-    zIndex: 1
   },
 });
