@@ -131,3 +131,30 @@ export const getStats = async () => {
     rechazados: rechazados?.count || 0,
   };
 };
+
+export const getTotalCount = async (
+  search: string = "", 
+  desde: string = "", 
+  hasta: string = "", 
+  partido: string = "", 
+  partida: string = ""
+): Promise<number> => {
+  if (!db) return 0;
+  
+  let q = "SELECT COUNT(*) as count FROM tramites WHERE 1=1";
+  const params: any[] = [];
+  
+  if (desde) { q += " AND fecha_alta >= ?"; params.push(desde); }
+  if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
+  if (partido) { q += " AND partido = ?"; params.push(partido); }
+  if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
+
+  if (search) {
+    const s = `%${search}%`;
+    q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
+    params.push(s, s, s, s, s, s, s);
+  }
+  
+  const result = await db.getFirstAsync<{count: number}>(q, params);
+  return result?.count || 0;
+};
