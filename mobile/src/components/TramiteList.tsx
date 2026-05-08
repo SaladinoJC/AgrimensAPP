@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { useStore } from '../store/useStore';
 import { getTramites, getTotalCount } from '../db/database';
-import { TramiteCard } from './TramiteCard';
+import { TramiteCard } from './ui/TramiteCard';
 import { TramiteDetailModal } from './TramiteDetailModal';
 import { usePagination } from '../hooks/usePagination';
+import { LoadingTramitesSpinner } from './LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
 const C_CARD = "#1e2a42";
@@ -32,6 +33,7 @@ export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading =
     filterPartida,
     currentPage,
     pageSize,
+    isSyncing,
   } = useStore();
 
   const [tramites, setTramites] = useState<any[]>([]);
@@ -91,12 +93,9 @@ export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading =
     <TramiteCard tramite={item} onPress={() => handleTramitePress(item)} />
   );
 
-  if (isLoadingData) {
+  if (isLoadingData || isSyncing) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#00bfa5" />
-        <Text style={styles.loadingText}>Cargando trámites...</Text>
-      </View>
+      <LoadingTramitesSpinner />
     );
   }
 

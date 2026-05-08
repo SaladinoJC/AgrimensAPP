@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../store/useStore';
 import { getStats, getTotalCount } from '../db/database';
 import { SearchFilters } from './SearchFilters';
-import { SyncButton } from './SyncButton';
+import { SyncButton } from './ui/SyncButton';
 import { TramiteList } from './TramiteList';
 import { PaginationControl } from './PaginationControl';
 import { usePagination } from '../hooks/usePagination';
@@ -39,9 +39,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const { calculateTotalPages } = usePagination(pageSize);
-
 
   const loadStats = async () => {
     setIsLoadingStats(true);
@@ -81,23 +78,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       {/* Filtros de búsqueda */}
       <SearchFilters onSearch={handleSearch} />
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={true}
-      >
-        {/* Lista de trámites */}
+      <View style={[styles.scrollView, { flex: 1 }]}>
+        {/* Lista de tramites */}
         <View style={styles.listContainer}>
-          <TramiteList
-            key={refreshKey}
-            onRefresh={handleRefresh}
-            isLoading={isLoadingStats}
-          />
+          <TramiteList key={refreshKey} onRefresh={handleRefresh} isLoading={isLoadingStats} />
         </View>
-      </ScrollView>
-
         {/* Control de paginación */}
-        <PaginationControl totalCount={totalCount} pageSize={pageSize} />
+        <PaginationControl key={refreshKey} totalCount={totalCount} pageSize={pageSize} />
+      </View>
+
      
     </SafeAreaView>
   );

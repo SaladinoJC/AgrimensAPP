@@ -5,6 +5,7 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as BackgroundFetch from 'expo-background-fetch';
@@ -18,7 +19,7 @@ import { ArbaWebView } from './src/services/ArbaWebView';
 import { LoginScreen } from './src/components/LoginScreen';
 import { DashboardScreen } from './src/components/DashboardScreen';
 import { CredentialsModal } from './src/components/CredentialsModal';
-import { Map, Text, User } from 'lucide-react-native';
+import { Map, User } from 'lucide-react-native';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -185,7 +186,7 @@ export default function App() {
       <View style={styles.header}>
         <View style={styles.appBarLeft}>
           <Map color={C_PRIMARY} size={24} />
-          <Text style={styles.appBarTitle}>AgrimensAPP</Text>
+          <Text style={styles.appBarTitle}> AgrimensAPP</Text>
         </View>
         <View style={styles.headerContent}>
           <TouchableOpacity

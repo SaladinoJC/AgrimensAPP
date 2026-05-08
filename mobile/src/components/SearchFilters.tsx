@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../store/useStore';
-import { Search, Filter, X, Calendar } from 'lucide-react-native';
+import { Search, Filter, X, Calendar, Trash } from 'lucide-react-native';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
@@ -44,6 +44,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
     if (event.type === 'set' && selectedDate) {
       const dateString = selectedDate.toISOString().split('T')[0];
       setFilterDesde(dateString);
+      onSearch();
     }
     setShowDesdeModal(false);
   };
@@ -52,6 +53,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
     if (event.type === 'set' && selectedDate) {
       const dateString = selectedDate.toISOString().split('T')[0];
       setFilterHasta(dateString);
+      onSearch();
     }
     setShowHastaModal(false);
   };
@@ -128,7 +130,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
           style={styles.clearButton}
           onPress={clearFilters}
         >
-          <X size={16} color={C_TEXT} />
+          <Trash size={16} color={C_TEXT} />
           <Text style={styles.clearButtonText}>LIMPIAR</Text>
         </TouchableOpacity>
       </View>

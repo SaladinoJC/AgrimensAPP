@@ -48,7 +48,7 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
 
       <View style={styles.pageInfo}>
         <Text style={styles.pageText}>
-          Página  {currentPage} de {totalPages + 1}
+          Página  {currentPage} de {totalPages}
         </Text>
       </View>
 
