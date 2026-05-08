@@ -5,18 +5,14 @@ import {
   RefreshControl
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import * as BackgroundFetch from 'expo-background-fetch';
-import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import { useStore } from './src/store/useStore';
-import { initDB, upsertTramites, getTramites, getStats } from './src/db/database';
-import { ArbaWebView } from './src/services/ArbaWebView';
-import { syncArbaHeadless } from './src/services/HeadlessSync';
-import { parseTramitesFromPorFechaHtml } from './src/sync/parserDsisic';
-import { normalizarRango, sincronizarPorFecha } from './src/sync/sincronizacion';
+import { initDB, upsertTramites } from './src/db/database';
+import { registerBackgroundSync } from './src/services/BackgroundSyncRegistration';
+import { useSincronizador } from './src/sync/useSincronizador';
 import { autenticarAccesoLocal } from './src/authLocal/authLocal';
+import { TramitesQuery } from './src/tramites/TramitesQuery';
+import { compartirTramitePDF } from './src/tramites/ReportePDF';
 import { Search, Map, LogIn, RefreshCcw, BellRing, ChevronLeft, ChevronRight, X, Calendar as CalendarIcon } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -31,17 +27,6 @@ const C_AMBER = "#ffca28";
 const C_GREY = "#78909c";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
-
-const BACKGROUND_FETCH_TASK = 'background-sync-arba';
-
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  try {
-    await syncArbaHeadless();
-    return BackgroundFetch.BackgroundFetchResult.NewData;
-  } catch (error) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
-  }
-});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -79,7 +64,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDesdePicker, setShowDesdePicker] = useState(false);
   const [showHastaPicker, setShowHastaPicker] = useState(false);
-  const [usarWebViewSync, setUsarWebViewSync] = useState(false);
+  const { sync, SincronizadorComponent } = useSincronizador();
 
   const onDesdeChange = (event: any, selectedDate?: Date) => {
     setShowDesdePicker(false);
@@ -107,14 +92,7 @@ export default function App() {
         }
         
         try {
-          const { status } = await Notifications.requestPermissionsAsync();
-          if (status === 'granted') {
-            await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-              minimumInterval: 60 * 60 * 3, // 3 hours
-              stopOnTerminate: false,
-              startOnBoot: true,
-            });
-          }
+          await registerBackgroundSync();
         } catch (pushErr) {
           console.log("Push init error", pushErr);
         }
@@ -129,8 +107,16 @@ export default function App() {
 
   const loadData = useCallback(async () => {
     if (!dbReady) return;
-    const data = await getTramites(search, desde, hasta, partido, partida, 50, page * 50);
-    const st = await getStats();
+    const data = await TramitesQuery.list({
+      search,
+      desde,
+      hasta,
+      partido,
+      partida,
+      limit: 50,
+      offset: page * 50,
+    });
+    const st = await TramitesQuery.dashboard();
     setTramites(data);
     setStats(st);
   }, [dbReady, search, desde, hasta, partido, partida, page]);
@@ -142,7 +128,6 @@ export default function App() {
   useEffect(() => {
     const runForegroundSync = async () => {
       if (!isSyncing) return;
-      if (usarWebViewSync) return; // WebView toma control
 
       if (!cuit || cuit.trim() === '' || !cit || cit.trim() === '') {
         setIsSyncing(false);
@@ -151,13 +136,8 @@ export default function App() {
       }
 
       try {
-        const rango = normalizarRango({ desde, hasta });
-        const result = await sincronizarPorFecha({ cuit, cit }, rango);
+        const result = await sync({ cuit, cit }, { desde, hasta });
         if (!result.ok) {
-          if (result.sugerirWebView) {
-            setUsarWebViewSync(true);
-            return;
-          }
           throw result.error;
         }
 
@@ -177,36 +157,7 @@ export default function App() {
     };
 
     runForegroundSync();
-  }, [isSyncing, usarWebViewSync, cuit, cit, desde, hasta, loadData, setIsSyncing, setNovedades, upsertTramites]);
-
-  const handleSyncComplete = async (html: string, error?: string) => {
-    if (error) {
-      setUsarWebViewSync(false);
-      setIsSyncing(false);
-      Alert.alert("Error de Sincronización", error);
-      return;
-    }
-    let rows: any[] = [];
-    try {
-      rows = parseTramitesFromPorFechaHtml(html);
-    } catch (e: any) {
-      setUsarWebViewSync(false);
-      setIsSyncing(false);
-      Alert.alert("Error de Sincronización", e?.message || "Error parseando respuesta de ARBA/DSISIC");
-      return;
-    }
-
-    const novs = await upsertTramites(rows);
-    if (novs.length > 0) {
-      setNovedades(novs);
-    } else {
-      Alert.alert("Sincronización Exitosa", `Se procesaron ${rows.length} trámites (Sin novedades nuevas)`);
-    }
-    setPage(0);
-    await loadData();
-    setUsarWebViewSync(false);
-    setIsSyncing(false);
-  };
+  }, [isSyncing, cuit, cit, desde, hasta, loadData, setIsSyncing, setNovedades, upsertTramites, sync]);
 
   const handleLogin = async () => {
     try {
@@ -247,33 +198,6 @@ export default function App() {
   };
 
   if (!dbReady) return <View style={styles.loadingBg}><ActivityIndicator size="large" color={C_PRIMARY}/></View>;
-
-  const shareTramite = async (tramite: any) => {
-    const htmlContent = `
-      <html>
-        <body style="font-family: sans-serif; padding: 40px; color: #333;">
-          <h1 style="color: #00bfa5;">AgrimensAPP - Reporte de Trámite</h1>
-          <hr/>
-          <h2>Expediente #${tramite.nroExpediente}</h2>
-          <h3 style="color: ${getColor(tramite.estado)}">${tramite.estado}</h3>
-          <p><strong>Tipo:</strong> ${tramite.tipo_tramite}</p>
-          <p><strong>Partido:</strong> ${tramite.partido} | <strong>Partida:</strong> ${tramite.partida}</p>
-          <p><strong>Nomenclatura:</strong> ${tramite.nomenclatura}</p>
-          <p><strong>Fecha Alta:</strong> ${tramite.fecha_alta}</p>
-          <p><strong>Último Movimiento:</strong> ${tramite.fecha_movimiento}</p>
-          ${tramite.demora ? `<p><strong>Demora:</strong> ${tramite.demora} días</p>` : ''}
-          <br/><br/>
-          <p style="font-size: 12px; color: #888;">Generado automáticamente por AgrimensAPP Mobile</p>
-        </body>
-      </html>
-    `;
-    try {
-      const { uri } = await Print.printToFileAsync({ html: htmlContent });
-      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: 'Compartir Trámite' });
-    } catch (e) {
-      Alert.alert("Error", "No se pudo compartir el reporte.");
-    }
-  };
 
   const openLogin = () => {
     setTempCuit(cuit);
@@ -467,7 +391,7 @@ export default function App() {
                 {!!selectedTramite.demora && <Text style={styles.detailText}><Text style={styles.bold}>Demora:</Text> {selectedTramite.demora} días</Text>}
                 {!!selectedTramite.final_estimada && <Text style={styles.detailText}><Text style={styles.bold}>Final Estimada:</Text> {selectedTramite.final_estimada}</Text>}
                 
-                <TouchableOpacity style={[styles.btnPrimary, {marginTop: 20, alignSelf: 'center', width: '100%', alignItems: 'center'}]} onPress={() => shareTramite(selectedTramite)}>
+                <TouchableOpacity style={[styles.btnPrimary, {marginTop: 20, alignSelf: 'center', width: '100%', alignItems: 'center'}]} onPress={() => compartirTramitePDF(selectedTramite)}>
                   <Text style={{ color: C_BG, fontWeight: 'bold' }}>Compartir (PDF / WhatsApp)</Text>
                 </TouchableOpacity>
               </>
@@ -501,8 +425,8 @@ export default function App() {
         </View>
       </Modal>
 
-      {/* Invisible WebView Component */}
-      {isSyncing && usarWebViewSync && <ArbaWebView cuit={cuit} cit={cit} onSyncComplete={handleSyncComplete} />}
+      {/* Invisible WebView Component (managed by useSincronizador hook) */}
+      {SincronizadorComponent}
     </SafeAreaView>
   );
 }
