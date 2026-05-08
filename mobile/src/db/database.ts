@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { Novedad } from '../novedades/types';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
@@ -27,7 +28,7 @@ export const initDB = async () => {
 export const upsertTramites = async (rows: any[]) => {
   if (!db) return [];
   
-  const novedades: Array<{nro: string, viejo: string, nuevo: string}> = [];
+  const novedades: Novedad[] = [];
   const stmt = await db.prepareAsync(`
     INSERT OR REPLACE INTO tramites
     (nroExpediente, partido, partida, estado, fecha_movimiento,
@@ -37,15 +38,37 @@ export const upsertTramites = async (rows: any[]) => {
   `);
 
   try {
+    // Preleer estados existentes en batch (evita N+1)
+    const nros = Array.from(
+      new Set(
+        rows
+          .map((r) => String(r.numeroTramite || r.nroExpediente || '').trim())
+          .filter((nro) => nro.length > 0)
+      )
+    );
+
+    const estadoPrevio = new Map<string, string>();
+    const CHUNK = 500;
+    for (let i = 0; i < nros.length; i += CHUNK) {
+      const chunk = nros.slice(i, i + CHUNK);
+      const placeholders = chunk.map(() => '?').join(',');
+      const q = `SELECT nroExpediente, estado FROM tramites WHERE nroExpediente IN (${placeholders})`;
+      const rowsPrev = await db.getAllAsync<{ nroExpediente: string; estado: string }>(q, chunk);
+      for (const r of rowsPrev) {
+        if (r?.nroExpediente) estadoPrevio.set(String(r.nroExpediente), String(r.estado ?? ''));
+      }
+    }
+
     await db.execAsync('BEGIN TRANSACTION');
     for (const r of rows) {
-      const nro = String(r.numeroTramite || r.nroExpediente || "");
+      const nro = String(r.numeroTramite || r.nroExpediente || "").trim();
+      if (!nro) continue;
       const estado_nuevo = String(r.estado || "");
       
       // Check for novedades
-      const viejo = await db.getFirstAsync<{estado: string}>('SELECT estado FROM tramites WHERE nroExpediente = ?', [nro]);
-      if (viejo && viejo.estado && viejo.estado.toUpperCase() !== estado_nuevo.toUpperCase()) {
-        novedades.push({ nro, viejo: viejo.estado, nuevo: estado_nuevo });
+      const viejoEstado = estadoPrevio.get(nro);
+      if (viejoEstado && viejoEstado.toUpperCase() !== estado_nuevo.toUpperCase()) {
+        novedades.push({ nro, viejo: viejoEstado, nuevo: estado_nuevo });
       }
 
       const fecha_estado = String(r.fechaEstado || r.fecha_movimiento || "");

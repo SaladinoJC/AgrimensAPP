@@ -5,7 +5,7 @@ import { WebView } from 'react-native-webview';
 interface ArbaWebViewProps {
   cuit: string;
   cit: string;
-  onSyncComplete: (rows: any[], error?: string) => void;
+  onSyncComplete: (html: string, error?: string) => void;
 }
 
 export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncComplete }) => {
@@ -78,13 +78,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncCompl
         .then(response => response.arrayBuffer())
         .then(buffer => {
           const html = new TextDecoder('iso-8859-1').decode(buffer);
-          // Extraer el JSON del HTML
-          const match = html.match(/(\\[\\s*\\{.*\\}\\s*\\])/s);
-          if (match && match[1]) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({type: 'SUCCESS', data: match[1]}));
-          } else {
-            window.ReactNativeWebView.postMessage(JSON.stringify({type: 'ERROR', message: 'No se encontró JSON en la respuesta'}));
-          }
+          window.ReactNativeWebView.postMessage(JSON.stringify({type: 'SUCCESS', html}));
         })
         .catch(err => {
           window.ReactNativeWebView.postMessage(JSON.stringify({type: 'ERROR', message: err.toString()}));
@@ -98,7 +92,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncCompl
        // Si volvemos al login después del step 1, las credenciales fallaron
        if (step === 2) {
           window.setTimeout(() => {
-             onSyncComplete([], "Credenciales incorrectas o sesión expirada");
+             onSyncComplete("", "Credenciales incorrectas o sesión expirada");
           }, 1000);
        }
     }
@@ -108,13 +102,12 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncCompl
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'SUCCESS') {
-        const tramites = JSON.parse(msg.data);
-        onSyncComplete(tramites);
+        onSyncComplete(String(msg.html || ""));
       } else {
-        onSyncComplete([], msg.message);
+        onSyncComplete("", msg.message);
       }
     } catch (e) {
-      onSyncComplete([], "Error parseando respuesta del WebView");
+      onSyncComplete("", "Error parseando respuesta del WebView");
     }
   };
 

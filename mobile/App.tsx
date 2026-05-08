@@ -5,7 +5,6 @@ import {
   RefreshControl
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import * as LocalAuthentication from 'expo-local-authentication';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as BackgroundFetch from 'expo-background-fetch';
@@ -13,8 +12,11 @@ import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import { useStore } from './src/store/useStore';
 import { initDB, upsertTramites, getTramites, getStats } from './src/db/database';
-import { syncArbaHeadless } from './src/services/HeadlessSync';
 import { ArbaWebView } from './src/services/ArbaWebView';
+import { syncArbaHeadless } from './src/services/HeadlessSync';
+import { parseTramitesFromPorFechaHtml } from './src/sync/parserDsisic';
+import { normalizarRango, sincronizarPorFecha } from './src/sync/sincronizacion';
+import { autenticarAccesoLocal } from './src/authLocal/authLocal';
 import { Search, Map, LogIn, RefreshCcw, BellRing, ChevronLeft, ChevronRight, X, Calendar as CalendarIcon } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -44,6 +46,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -75,6 +79,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDesdePicker, setShowDesdePicker] = useState(false);
   const [showHastaPicker, setShowHastaPicker] = useState(false);
+  const [usarWebViewSync, setUsarWebViewSync] = useState(false);
 
   const onDesdeChange = (event: any, selectedDate?: Date) => {
     setShowDesdePicker(false);
@@ -86,17 +91,8 @@ export default function App() {
     if (selectedDate) setHasta(selectedDate.toISOString().split('T')[0]);
   };
 
-  useEffect(() => {
-    const checkBiometrics = async () => {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      if (!hasHardware || !isEnrolled) {
-        // Si no tiene hardware o huella configurada, lo dejamos pasar directo
-        setIsAuthenticated(true);
-      }
-    };
-    checkBiometrics();
-  }, []);
+  // Policy: nunca bypass silencioso. Si biometría no disponible/enrolada,
+  // `authenticateAsync` puede caer a passcode/PIN del dispositivo.
 
   useEffect(() => {
     const setup = async () => {
@@ -143,12 +139,63 @@ export default function App() {
     loadData();
   }, [loadData]);
 
-  const handleSyncComplete = async (rows: any[], error?: string) => {
+  useEffect(() => {
+    const runForegroundSync = async () => {
+      if (!isSyncing) return;
+      if (usarWebViewSync) return; // WebView toma control
+
+      if (!cuit || cuit.trim() === '' || !cit || cit.trim() === '') {
+        setIsSyncing(false);
+        Alert.alert("Atención", "Falta CUIT o Clave. Tocá el ícono superior para iniciar sesión.");
+        return;
+      }
+
+      try {
+        const rango = normalizarRango({ desde, hasta });
+        const result = await sincronizarPorFecha({ cuit, cit }, rango);
+        if (!result.ok) {
+          if (result.sugerirWebView) {
+            setUsarWebViewSync(true);
+            return;
+          }
+          throw result.error;
+        }
+
+        const novs = await upsertTramites(result.rows);
+        if (novs.length > 0) {
+          setNovedades(novs);
+        } else {
+          Alert.alert("Sincronización Exitosa", `Se procesaron ${result.rows.length} trámites (Sin novedades nuevas)`);
+        }
+        setPage(0);
+        await loadData();
+      } catch (e: any) {
+        Alert.alert("Error de Sincronización", e?.message || String(e));
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    runForegroundSync();
+  }, [isSyncing, usarWebViewSync, cuit, cit, desde, hasta, loadData, setIsSyncing, setNovedades, upsertTramites]);
+
+  const handleSyncComplete = async (html: string, error?: string) => {
     if (error) {
+      setUsarWebViewSync(false);
       setIsSyncing(false);
       Alert.alert("Error de Sincronización", error);
       return;
     }
+    let rows: any[] = [];
+    try {
+      rows = parseTramitesFromPorFechaHtml(html);
+    } catch (e: any) {
+      setUsarWebViewSync(false);
+      setIsSyncing(false);
+      Alert.alert("Error de Sincronización", e?.message || "Error parseando respuesta de ARBA/DSISIC");
+      return;
+    }
+
     const novs = await upsertTramites(rows);
     if (novs.length > 0) {
       setNovedades(novs);
@@ -157,6 +204,7 @@ export default function App() {
     }
     setPage(0);
     await loadData();
+    setUsarWebViewSync(false);
     setIsSyncing(false);
   };
 
@@ -242,11 +290,9 @@ export default function App() {
         <TouchableOpacity 
           style={{ backgroundColor: C_PRIMARY, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 12 }}
           onPress={async () => {
-             const result = await LocalAuthentication.authenticateAsync({
-               promptMessage: 'Acceso seguro a AgrimensAPP',
-               fallbackLabel: 'Usar PIN'
-             });
-             setIsAuthenticated(result.success);
+             const r = await autenticarAccesoLocal();
+             setIsAuthenticated(r.ok);
+             if (!r.ok) Alert.alert('Acceso denegado', r.message);
           }}
         >
           <Text style={{color: C_BG, fontWeight: 'bold', fontSize: 16}}>Tocar para desbloquear</Text>
@@ -456,7 +502,7 @@ export default function App() {
       </Modal>
 
       {/* Invisible WebView Component */}
-      {isSyncing && <ArbaWebView cuit={cuit} cit={cit} onSyncComplete={handleSyncComplete} />}
+      {isSyncing && usarWebViewSync && <ArbaWebView cuit={cuit} cit={cit} onSyncComplete={handleSyncComplete} />}
     </SafeAreaView>
   );
 }
