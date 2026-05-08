@@ -9,12 +9,13 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Notifications from 'expo-notifications';
 import { useStore } from './src/store/useStore';
-import { initDB, upsertTramites, getTramites, getStats } from './src/db/database';
+import { initDB, upsertTramites } from './src/db/database';
 import { ArbaWebView } from './src/services/ArbaWebView';
 import { registerBackgroundSync } from './src/services/BackgroundSyncRegistration';
 import { parseTramitesFromPorFechaHtml } from './src/sync/parserDsisic';
 import { normalizarRango, sincronizarPorFecha } from './src/sync/sincronizacion';
 import { autenticarAccesoLocal } from './src/authLocal/authLocal';
+import { TramitesQuery } from './src/tramites/TramitesQuery';
 import { Search, Map, LogIn, RefreshCcw, BellRing, ChevronLeft, ChevronRight, X, Calendar as CalendarIcon } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -109,8 +110,16 @@ export default function App() {
 
   const loadData = useCallback(async () => {
     if (!dbReady) return;
-    const data = await getTramites(search, desde, hasta, partido, partida, 50, page * 50);
-    const st = await getStats();
+    const data = await TramitesQuery.list({
+      search,
+      desde,
+      hasta,
+      partido,
+      partida,
+      limit: 50,
+      offset: page * 50,
+    });
+    const st = await TramitesQuery.dashboard();
     setTramites(data);
     setStats(st);
   }, [dbReady, search, desde, hasta, partido, partida, page]);
