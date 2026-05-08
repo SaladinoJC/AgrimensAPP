@@ -37,12 +37,18 @@ export async function sincronizarPorFechaHeadless(
       throw new SyncError('CREDENCIALES_INVALIDAS', 'Credenciales incorrectas o sesión expirada.');
     }
 
+    // Esperar a que el CookieManager nativo guarde las cookies (RN bug on Android)
+    await new Promise(r => setTimeout(r, 1500));
+
     // 3. Asignar rol (mejor esfuerzo)
     await fetch('https://www16.arba.gov.ar/DSISIC/asignarRol.do', {
       method: 'POST',
       body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
+    
+    // Esperar nuevamente para cookies actualizadas
+    await new Promise(r => setTimeout(r, 1500));
   }
 
   // 4. Inicializar pantalla de fechas (mejor esfuerzo)

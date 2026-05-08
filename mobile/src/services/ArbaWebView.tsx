@@ -5,19 +5,20 @@ import { WebView } from 'react-native-webview';
 interface ArbaWebViewProps {
   cuit: string;
   cit: string;
+  rango?: { desde: string; hasta: string };
   onSyncComplete: (html: string, error?: string) => void;
 }
 
-export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncComplete }) => {
+export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSyncComplete }) => {
   const webviewRef = useRef<WebView>(null);
   const [step, setStep] = useState(1);
 
-  // Fecha actual y hace un año para la consulta
+  // Fecha actual y hace un año por defecto
   const today = new Date();
   const yearAgo = new Date();
   yearAgo.setFullYear(today.getFullYear() - 1);
-  const strHasta = today.toISOString().split('T')[0];
-  const strDesde = yearAgo.toISOString().split('T')[0];
+  const strHasta = rango?.hasta || today.toISOString().split('T')[0];
+  const strDesde = rango?.desde || yearAgo.toISOString().split('T')[0];
 
   const handleNavigationStateChange = (navState: any) => {
     const { url, loading } = navState;
@@ -58,7 +59,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, onSyncCompl
     } 
     else if ((step === 1 || step === 2) && (url.includes('DSISIC/home.do') || url.includes('DSISIC/asignarRol.do') || url.includes('DSISIC/login.do'))) {
       // Login exitoso o sesión ya activa, ir a inicializar fechas
-      webviewRef.current?.injectJavaScript(`window.location.href = 'https://www16.arba.gov.ar/DSISIC/consultaFechas.jsp'; true;`);
+      webviewRef.current?.injectJavaScript(`window.location.href = 'https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson'; true;`);
       setStep(3);
     }
     else if (step === 3 && url.includes('consultaFechas.jsp')) {

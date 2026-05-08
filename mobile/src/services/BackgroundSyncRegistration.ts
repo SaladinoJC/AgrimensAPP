@@ -22,8 +22,12 @@ const defineBackgroundSyncTask = () => {
   isTaskDefined = true;
 };
 
+// Llama a defineBackgroundSyncTask en el scope global del módulo.
+// Esto es CRÍTICO para que funcione en background real (headless),
+// ya que los useEffect de React no se ejecutan cuando el OS despierta la app.
+defineBackgroundSyncTask();
+
 export const registerBackgroundSync = async (): Promise<void> => {
-  defineBackgroundSyncTask();
 
   const { status } = await Notifications.requestPermissionsAsync();
   if (status !== 'granted') return;
