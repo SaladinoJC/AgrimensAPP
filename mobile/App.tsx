@@ -13,6 +13,7 @@ import * as Notifications from 'expo-notifications';
 import { useStore } from './src/store/useStore';
 import { initDB, upsertTramites, getTramites, getStats } from './src/db/database';
 import { ArbaWebView } from './src/services/ArbaWebView';
+import { syncArbaHeadless } from './src/services/HeadlessSync';
 import { parseTramitesFromPorFechaHtml } from './src/sync/parserDsisic';
 import { normalizarRango, sincronizarPorFecha } from './src/sync/sincronizacion';
 import { autenticarAccesoLocal } from './src/authLocal/authLocal';
@@ -45,6 +46,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
