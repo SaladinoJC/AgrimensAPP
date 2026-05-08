@@ -30,7 +30,7 @@ export const compartirTramitePDF = async (tramite: any) => {
         <p><strong>Nomenclatura:</strong> ${tramite.nomenclatura || '—'}</p>
         <p><strong>Fecha Alta:</strong> ${tramite.fecha_alta || '—'}</p>
         <p><strong>Último Movimiento:</strong> ${tramite.fecha_movimiento || '—'}</p>
-        ${tramite.demora ? \`<p><strong>Demora:</strong> \${tramite.demora} días</p>\` : ''}
+        ${tramite.demora ? '<p><strong>Demora:</strong> ' + tramite.demora + ' días</p>' : ''}
         <br/><br/>
         <p style="font-size: 12px; color: #888;">Generado automáticamente por AgrimensAPP Mobile</p>
       </body>

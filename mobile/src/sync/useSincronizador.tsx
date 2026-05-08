@@ -59,7 +59,7 @@ export function useSincronizador() {
       const rows = parseTramitesFromPorFechaHtml(html);
       resolve({ ok: true, rows });
     } catch (e) {
-      resolve({ ok: false, error: new SyncError('PARSE_ERROR', String(e)) });
+      resolve({ ok: false, error: new SyncError('TECNICO', String(e)) });
     }
   }, []);
 
