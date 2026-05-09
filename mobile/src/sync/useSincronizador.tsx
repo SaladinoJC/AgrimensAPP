@@ -4,7 +4,6 @@ import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaHtml } from './parserDsisic';
 import { normalizarRango } from './sincronizacion';
 import { ArbaWebView } from './../services/ArbaWebView';
-import { useStore } from '../store/useStore';
 
 export type SyncResult =
   | { ok: true; rows: any[] }
@@ -18,7 +17,6 @@ export function useSincronizador() {
     cit: '', 
     rango: { desde: '', hasta: '' } 
   });
-  const {setIsSyncing} = useStore();
   const resolvePromise = useRef<((res: SyncResult) => void) | null>(null);
 
   const sync = useCallback(async (creds: CredencialesArba, rangoInput?: Partial<RangoFechas>): Promise<SyncResult> => {
@@ -45,10 +43,9 @@ export function useSincronizador() {
     }
   }, []);
 
-  // Función para cuando el usuario presiona la (X) roja
+  // Función para cuando el usuario quiere calcelar la sincronización manual (cerrar el WebView)
   const cancelSync = useCallback(() => {
     setWebviewState(prev => ({ ...prev, active: false }));
-    setIsSyncing(false);
     if (resolvePromise.current) {
       resolvePromise.current({ ok: false, error: new SyncError('TECNICO', "Sincronización cancelada por el usuario.") });
       resolvePromise.current = null;
@@ -75,7 +72,6 @@ export function useSincronizador() {
     }
   }, []);
 
-  // El componente que App.tsx va a renderizar sin saber qué hay adentro
   const SincronizadorComponent = webviewState.active ? (
     <ArbaWebView 
       cuit={webviewState.cuit} 

@@ -96,7 +96,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
        if (step === 2) {
           window.setTimeout(() => {
              onSyncComplete("", "Credenciales incorrectas o sesión expirada");
-          }, 1000);
+          }, 500);
        }
     }
   };

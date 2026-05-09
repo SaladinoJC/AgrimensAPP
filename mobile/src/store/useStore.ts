@@ -9,7 +9,6 @@ interface AppState {
   
   // Sincronización
   isSyncing: boolean;
-  syncAbortController: AbortController | null;
   
   // Búsqueda y filtros
   searchQuery: string;
@@ -31,7 +30,6 @@ interface AppState {
   setCit: (cit: string) => void;
   setIsLoggedIn: (status: boolean) => void;
   setIsSyncing: (status: boolean) => void;
-  setSyncAbortController: (controller: AbortController | null) => void;
   setSearchQuery: (query: string) => void;
   setFilterDesde: (date: string) => void;
   setFilterHasta: (date: string) => void;
@@ -58,7 +56,6 @@ export const useStore = create<AppState>((set) => ({
   
   // Sincronización
   isSyncing: false,
-  syncAbortController: null,
   
   // Búsqueda
   searchQuery: '',
@@ -82,7 +79,6 @@ export const useStore = create<AppState>((set) => ({
   setCit: (cit) => set({ cit }),
   setIsLoggedIn: (status) => set({ isLoggedIn: status }),
   setIsSyncing: (status) => set({ isSyncing: status }),
-  setSyncAbortController: (controller) => set({ syncAbortController: controller }),
   setSearchQuery: (query) => set({ searchQuery: query, currentPage: 1 }),
   setFilterDesde: (date) => set({ filterDesde: date, currentPage: 1 }),
   setFilterHasta: (date) => set({ filterHasta: date, currentPage: 1 }),

@@ -45,7 +45,7 @@ export async function sincronizarPorFechaHeadless(
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       
-      await new Promise(r => setTimeout(r, 1500)); // Espera cookies
+      await new Promise(r => setTimeout(r, 500)); // Espera cookies
     }
 
     // --- 4. Inicializar pantalla ---

@@ -1,7 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
 import { upsertTramites } from '../db/database';
-import { normalizarRango, sincronizarPorFecha } from '../sync/sincronizacion';
+import { normalizarRango } from '../sync/sincronizacion';
+import { sincronizarPorFechaHeadless } from '../sync/headlessAdapter';
 import { SyncError } from '../sync/types';
 import { tieneNovedades, textoNotificacionAgregada } from '../novedades/policy';
 
@@ -12,12 +13,10 @@ export const syncArbaHeadless = async () => {
     if (!cuit || !cit) return;
 
     const rango = normalizarRango();
-    const result = await sincronizarPorFecha({ cuit, cit }, rango);
-    if (!result.ok) {
-      throw result.error;
-    }
 
-    const novedades = await upsertTramites(result.rows);
+    const result = await sincronizarPorFechaHeadless({ cuit, cit }, rango);
+
+    const novedades = await upsertTramites(result);
 
     if (tieneNovedades(novedades)) {
       const { title, body } = textoNotificacionAgregada(novedades);
