@@ -69,7 +69,6 @@ export default function App() {
     
     try {
       const novs = await upsertTramites(result.rows);
-      setRefreshKey(); // Forzar recarga de lista en Dashboard
       if (novs.length > 0) {
         setNovedades(novs); 
       } else {
@@ -83,6 +82,7 @@ export default function App() {
     }
     finally{
       setIsSyncing(false);
+      setRefreshKey(); // Forzar recarga de lista en Dashboard
     }
   };
 

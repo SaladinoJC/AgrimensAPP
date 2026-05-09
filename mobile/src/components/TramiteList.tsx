@@ -104,14 +104,6 @@ export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading =
         keyExtractor={(item) => item.nroExpediente}
         scrollEnabled={true}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading || isLoadingData || isSyncing}
-            onRefresh={onRefresh}
-            colors={[C_PRIMARY]}
-            tintColor={C_PRIMARY}
-          />
-        }
       />
 
       <TramiteDetailModal

@@ -92,7 +92,7 @@ export const useStore = create<AppState>((set) => ({
   setPageSize: (size) => set({ pageSize: size }),
   setNovedades: (novedades) => set({ novedades }),
   clearNovedades: () => set({ novedades: [] }),
-  setRefreshKey: () => () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
+  setRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
   clearFilters: () => set({
     searchQuery: '',
     filterDesde: '',
