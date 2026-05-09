@@ -6,35 +6,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
+import { Tramite } from '../../types/tramites-type';
+import { getColor } from '../../utils/utils-tramite';
 
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";
 const C_ACCENT = "#4fc3f7";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
-const C_GREEN = "#66bb6a";
-const C_AMBER = "#ffca28";
 const C_RED = "#ef5350";
-const C_GREY = "#78909c";
 const C_BG = "#0f1724";
 
-const getColor = (estado?: string) => {
-  if (!estado) return C_GREY;
-  const e = estado.toUpperCase();
-  if (e.includes("RECHAZ")) return C_RED;
-  if (e.includes("FINALIZ") || e.includes("ENTREGADO")) return C_GREEN;
-  if (e.includes("EN CURSO") || e.includes("EN TRAMITE") || e.includes("PENDIENTE") || e.includes("OBSERVADO")) return C_AMBER;
-  return C_GREY;
-};
-
-interface Tramite {
-  nroExpediente: string;
-  tipo_tramite: string;
-  partido: string;
-  partida: string;
-  fecha_movimiento?: string;
-  estado?: string;
-}
 
 interface TramiteCardProps {
   tramite: Tramite;
