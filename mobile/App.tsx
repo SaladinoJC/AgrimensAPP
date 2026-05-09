@@ -6,11 +6,9 @@ import {
   TouchableOpacity,
   Alert,
   Text,
-  Modal,
-  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Map, BellRing, User, Lock } from 'lucide-react-native';
+import { Map, User, Lock } from 'lucide-react-native';
 
 import { useStore } from './src/store/useStore';
 import { upsertTramites } from './src/db/database';
@@ -22,20 +20,15 @@ import { LoadingTramitesSpinner } from './src/components/ui/LoadingTramitesSpinn
 import { useAppBoot } from './src/services/useAppBoot';
 import { useAuthManager } from './src/services/useAuthManager';
 import { useSincronizador } from './src/sync/useSincronizador';
+import { NovedadesModal } from './src/components/NovedadesModal';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
-const C_AMBER = "#ffca28";
-const C_CARD = "#1e2a42";
 const C_TEXT = "#eceff1";
-const C_TEXT2 = "#90a4ae";
 
 export default function App() {
   const {
     isLoggedIn,
-    isSyncing,
-    cuit,
-    cit,
     setIsSyncing,
     novedades,
     setNovedades,
@@ -148,32 +141,10 @@ export default function App() {
 
         {SincronizadorComponent}
 
-        <Modal visible={novedades.length > 0} transparent animationType="slide">
-          <View style={styles.modalBg}>
-            <View style={[styles.modalContent, { maxHeight: '80%' }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <BellRing color={C_AMBER} size={24} style={{ marginRight: 8 }} />
-                <Text style={styles.modalTitle}>¡Novedades!</Text>
-              </View>
-              <FlatList
-                data={novedades}
-                keyExtractor={(item) => item.nro}
-                renderItem={({ item }) => (
-                  <View style={styles.novedadItem}>
-                    <Text style={{ color: C_TEXT, fontWeight: 'bold' }}>Trámite #{item.nro}</Text>
-                    <Text style={{ color: C_TEXT2, fontSize: 12 }}>De '{item.viejo}' a '{item.nuevo}'</Text>
-                  </View>
-                )}
-              />
-              <TouchableOpacity 
-                style={[styles.btnPrimary, { marginTop: 16, alignSelf: 'flex-end' }]} 
-                onPress={() => setNovedades([])}
-              >
-                <Text style={{ color: C_BG, fontWeight: 'bold' }}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        <NovedadesModal 
+          novedades={novedades} 
+          onClose={() => setNovedades([])} 
+        />
       </>
     );
   };
@@ -194,9 +165,5 @@ const styles = StyleSheet.create({
   appBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   appBarTitle: { color: C_TEXT, fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
   profileButton: { padding: 8 },
-  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: C_CARD, borderRadius: 12, padding: 20 },
-  modalTitle: { color: C_TEXT, fontSize: 18, fontWeight: 'bold' },
   btnPrimary: { backgroundColor: C_PRIMARY, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, alignItems: 'center' },
-  novedadItem: { backgroundColor: C_BG, padding: 12, borderRadius: 8, marginBottom: 8 },
 });
