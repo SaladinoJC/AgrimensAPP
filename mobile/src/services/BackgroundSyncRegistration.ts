@@ -1,4 +1,4 @@
-import * as BackgroundFetch from 'expo-background-fetch';
+import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import { syncArbaHeadless } from './HeadlessSync';
@@ -13,9 +13,9 @@ const defineBackgroundSyncTask = () => {
   TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     try {
       await syncArbaHeadless();
-      return BackgroundFetch.BackgroundFetchResult.NewData;
+      return BackgroundTask.BackgroundTaskResult.Success;
     } catch {
-      return BackgroundFetch.BackgroundFetchResult.Failed;
+      return BackgroundTask.BackgroundTaskResult.Failed;
     }
   });
 
@@ -35,9 +35,7 @@ export const registerBackgroundSync = async (): Promise<void> => {
   const alreadyRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
   if (alreadyRegistered) return;
 
-  await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+  await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
     minimumInterval: 60 * 60 * 3, // 3 hours
-    stopOnTerminate: false,
-    startOnBoot: true,
   });
 };

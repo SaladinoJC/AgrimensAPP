@@ -49,8 +49,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-  // cargar estadisticas al cargar el componente 
-  // y recalcula si los filtros globales del store cambian.
+  // Cargar estadísticas al montar el componente 
+  // y recalcular si los filtros globales del store cambian.
   useEffect(() => {
     loadStats();
   }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida]);
@@ -58,7 +58,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const handleSearch = async () => {
     // Si los filtros cambian en el SearchFilters y actualizan el store,
     // el useEffect de arriba ya se encarga de llamar a loadStats automáticamente
-    // Sacar el boton buscar???
     await loadStats();
   };
 

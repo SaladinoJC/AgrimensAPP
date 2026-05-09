@@ -6,14 +6,14 @@ interface ArbaWebViewProps {
   cuit: string;
   cit: string;
   rango?: { desde: string; hasta: string };
-  onSyncComplete: (html: string, error?: string) => void;
+  // 1. CORRECCIÓN: Ahora espera un arreglo (rows) igual que App.tsx
+  onSyncComplete: (rows: any[], error?: string) => void;
 }
 
 export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSyncComplete }) => {
   const webviewRef = useRef<WebView>(null);
   const [step, setStep] = useState(1);
 
-  // Fecha actual y hace un año por defecto
   const today = new Date();
   const yearAgo = new Date();
   yearAgo.setFullYear(today.getFullYear() - 1);
@@ -22,7 +22,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
 
   const handleNavigationStateChange = (navState: any) => {
     const { url, loading } = navState;
-    if (loading) return; // IMPORTANTE: Esperar a que la página cargue completamente
+    if (loading) return; 
 
     console.log("WebView navigating to: ", url, " Step: ", step);
 
@@ -93,7 +93,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
        // Si volvemos al login después del step 1, las credenciales fallaron
        if (step === 2) {
           window.setTimeout(() => {
-             onSyncComplete("", "Credenciales incorrectas o sesión expirada");
+             onSyncComplete([""], "Credenciales incorrectas o sesión expirada");
           }, 1000);
        }
     }
@@ -103,12 +103,12 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'SUCCESS') {
-        onSyncComplete(String(msg.html || ""));
+        onSyncComplete(msg.data ? [msg.data] : [], undefined);
       } else {
-        onSyncComplete("", msg.message);
+        onSyncComplete([""], msg.message);
       }
     } catch (e) {
-      onSyncComplete("", "Error parseando respuesta del WebView");
+      onSyncComplete([""], "Error parseando respuesta del WebView");
     }
   };
 

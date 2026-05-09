@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
@@ -99,7 +100,7 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
           <div class="detail-row"><div class="detail-label">Demora:</div><div class="detail-value">${tramite.demora || '-'}</div></div>
           <div class="detail-row"><div class="detail-label">Fecha Final Estimada:</div><div class="detail-value">${tramite.final_estimada || '-'}</div></div>
           <div class="detail-row"><div class="detail-label">Última Sincronización:</div><div class="detail-value">${tramite.ultima_sincronizacion || '-'}</div></div>
-          <p class="timestamp">Generado el: ${new Date().toLocaleString('es-AR')}</p>
+          <p class="timestamp">Generado automáticamente por AgrimensAPP el: ${new Date().toLocaleString('es-AR')}</p>
         </body>
       </html>
     `;
@@ -123,7 +124,7 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
         dialogTitle: 'Compartir Trámite',
       });
     } catch (error) {
-      console.error('Error sharing PDF:', error);
+      Alert.alert('Ocurrió un error al generar o compartir el PDF.');
     }
   };
 
