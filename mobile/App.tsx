@@ -8,7 +8,6 @@ import {
   Text,
   Modal,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
@@ -23,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoginScreen } from './src/components/LoginScreen';
 import { registerBackgroundSync } from './src/services/BackgroundSyncRegistration';
 import { autenticarAccesoLocal } from './src/authLocal/authLocal';
+import { LoadingTramitesSpinner } from './src/components/ui/LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -115,18 +115,28 @@ export default function App() {
 
   const handleSyncComplete = async (rows: any[], error?: string) => {
     setShowWebView(false);
+    setIsSyncing(false); 
+    setSyncAbortController(null);
+
+    console.log("\nlog metodo handleSyncComplete APP.tsx\n")
+    console.log(rows)
+
     if (error) {
-      setIsSyncing(false);
       Alert.alert("Error de Sincronización", error);
       return;
     }
-    const novs = await upsertTramites(rows);
-    if (novs.length > 0) {
-      setNovedades(novs);
-    } else {
-      Alert.alert("Sincronización Exitosa", `Se procesaron ${rows[0].length} trámites (Sin novedades nuevas)`);
+
+    try {
+      const novs = await upsertTramites(rows);
+      if (novs.length > 0) {
+        setNovedades(novs);
+      } else {
+        Alert.alert("Sincronización Exitosa", `Se procesaron ${rows.length} trámites (Sin novedades nuevas)`);
+      }
+    } catch (dbError: any) {
+       Alert.alert("Error guardando datos", "Hubo un problema al guardar los trámites en tu teléfono.");
+       console.error(dbError);
     }
-    setIsSyncing(false);
   };
 
   // Lógica principal de Renderizado
@@ -134,9 +144,7 @@ export default function App() {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
     if (!appReady) {
       return (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={C_PRIMARY} />
-        </View>
+        <LoadingTramitesSpinner />
       );
     }
 
@@ -146,7 +154,8 @@ export default function App() {
         <LoginScreen 
           onLoginSuccess={() => {
             // Cuando loguea por primera vez, asumimos que ya es seguro dejarlo pasar
-            setIsAuthenticated(true); 
+            setIsAuthenticated(true);
+            handleSync(); // Iniciar sincronización apenas loguea por primera vez 
           }} 
         />
       );

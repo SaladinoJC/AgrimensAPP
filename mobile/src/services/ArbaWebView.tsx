@@ -6,7 +6,7 @@ interface ArbaWebViewProps {
   cuit: string;
   cit: string;
   rango?: { desde: string; hasta: string };
-  // 1. CORRECCIÓN: Ahora espera un arreglo (rows) igual que App.tsx
+  // Garantizamos que siempre devolvemos un array de trámites (o vacío si falla)
   onSyncComplete: (rows: any[], error?: string) => void;
 }
 
@@ -14,6 +14,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
   const webviewRef = useRef<WebView>(null);
   const [step, setStep] = useState(1);
 
+  // Fecha actual y hace un año por defecto
   const today = new Date();
   const yearAgo = new Date();
   yearAgo.setFullYear(today.getFullYear() - 1);
@@ -22,12 +23,14 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
 
   const handleNavigationStateChange = (navState: any) => {
     const { url, loading } = navState;
+    
+    // IMPORTANTE: Esperar a que la página cargue completamente antes de inyectar código
     if (loading) return; 
 
     console.log("WebView navigating to: ", url, " Step: ", step);
 
     if (step === 1 && url.toLowerCase().includes('sso.arba.gov.ar/login')) {
-      // Inyectar credenciales y hacer login
+      // --- PASO 1: Inyectar credenciales y hacer login ---
       const injectLogin = `
         try {
           const cuitInput = document.querySelector('input[name="username"]') || document.querySelector('input[name="CUIT"]');
@@ -40,6 +43,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
             citInput.value = '${cit}';
             if (cuitExtra) cuitExtra.value = '${cuit}';
             if (citExtra) citExtra.value = '${cit}';
+            
             const btn = document.querySelector('input[type="submit"], button[type="submit"], input[name="submit"], input[value="INGRESAR"]');
             if (btn) {
                btn.click();
@@ -90,10 +94,11 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
       setStep(4);
     }
     else if (url.toLowerCase().includes('sso.arba.gov.ar/login') && step > 1) {
-       // Si volvemos al login después del step 1, las credenciales fallaron
+       // --- MANEJO DE ERRORES: Volvió al login, credenciales malas ---
+       setStep(99); // Un paso que indica error de login para evitar loops
        if (step === 2) {
           window.setTimeout(() => {
-             onSyncComplete([""], "Credenciales incorrectas o sesión expirada");
+             onSyncComplete([], "Credenciales incorrectas o sesión expirada");
           }, 1000);
        }
     }
@@ -103,7 +108,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'SUCCESS') {
-        onSyncComplete(msg.data ? [msg.data] : [], undefined);
+        onSyncComplete([String(msg.html || "")]);
       } else {
         onSyncComplete([""], msg.message);
       }
@@ -111,6 +116,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
       onSyncComplete([""], "Error parseando respuesta del WebView");
     }
   };
+
 
   return (
     <View style={styles.hiddenContainer}>
@@ -122,6 +128,12 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
+        injectedJavaScript={`
+          window.alert = function(mensaje) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'ERROR', message: mensaje }));
+          };
+          true;
+        `}
       />
     </View>
   );
