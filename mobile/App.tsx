@@ -120,8 +120,6 @@ export default function App() {
       Alert.alert("Error de Sincronización", error);
       return;
     }
-    console.log(rows[0][0])
-    console.log(typeof rows[0])
     const novs = await upsertTramites(rows);
     if (novs.length > 0) {
       setNovedades(novs);
