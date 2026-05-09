@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStore } from '../store/useStore';
-import { useBiometric } from '../hooks/useBiometric';
+import { useBiometric } from '../authLocal/useBiometric';
 import { Lock, Fingerprint, Eye, EyeOff } from 'lucide-react-native';
 
 const C_BG = "#0f1724";
