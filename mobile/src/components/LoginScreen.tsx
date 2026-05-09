@@ -80,13 +80,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     try {
       await SecureStore.setItemAsync('cuit', cuit);
       await SecureStore.setItemAsync('cit', cit);
+      await AsyncStorage.setItem('isLoggedIn', 'true');
       
       storeCuit(cuit);
       storeCit(cit);
       setIsLoggedIn(true);
-      await AsyncStorage.setItem('isLoggedIn', 'true');
       
       onLoginSuccess();
+
     } catch (error) {
       Alert.alert('Error', 'No se pudieron guardar las credenciales');
     } finally {

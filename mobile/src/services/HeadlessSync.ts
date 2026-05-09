@@ -35,7 +35,3 @@ export const syncArbaHeadless = async () => {
     console.log("Background sync error:", msg);
   }
 };
-
-export const cancelSync = () => {
-  // No hay una forma directa de "cancelar" la tarea en segundo plano,
-  };

@@ -49,10 +49,12 @@ export default function App() {
 
   // Lógica puente de Sincronización
   const handleSync = async () => {
-    if (isSyncing || !cuit || !cit) return;
+    const freshState = useStore.getState();
+
+    if (freshState.isSyncing || !freshState.cuit || !freshState.cit) return;
     setIsSyncing(true);
-    
-    const result = await sync({ cuit, cit });
+
+    const result = await sync({ cuit: freshState.cuit, cit: freshState.cit });
     
     if (!result.ok) {
       if (result.error?.message.includes("Credenciales") || result.error?.message.includes("sesión expirada")) {
@@ -98,7 +100,7 @@ export default function App() {
           onLoginSuccess={() => {
             // Cuando loguea por primera vez, asumimos que ya es seguro dejarlo pasar
             setIsAuthenticated(true);
-            handleSync(); // Iniciar sincronización apenas loguea por primera vez 
+            handleSync();
           }} 
         />
       );
