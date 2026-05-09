@@ -3,8 +3,17 @@ import { Novedad } from '../novedades/types';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-export const initDB = async () => {
+//Singleton para obtener la instancia de la base de datos. Asegura que solo se abra una conexión.
+export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
+  if (db !== null) {
+    return db;
+  }
   db = await SQLite.openDatabaseAsync('tramites.db');
+  return db;
+};
+
+export const initDB = async () => {
+  const db = await getDatabase();
   
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS tramites (
@@ -26,7 +35,7 @@ export const initDB = async () => {
 };
 
 export const upsertTramites = async (rows: any[]) => {
-  if (!db) return [];
+  const db = await getDatabase();
   
   const novedades: Novedad[] = [];
   const stmt = await db.prepareAsync(`
@@ -108,6 +117,7 @@ export const upsertTramites = async (rows: any[]) => {
   return novedades;
 };
 
+
 export const getTramites = async (
   search: string = "", 
   desde: string = "", 
@@ -117,6 +127,8 @@ export const getTramites = async (
   limit: number = 50, 
   offset: number = 0
 ) => {
+  const db = await getDatabase();
+
   if (!db) return [];
   
   let q = "SELECT * FROM tramites WHERE 1=1";
@@ -139,8 +151,9 @@ export const getTramites = async (
   return await db.getAllAsync(q, params);
 };
 
+
 export const getStats = async () => {
-  if (!db) return { total: 0, en_curso: 0, finalizados: 0, rechazados: 0 };
+  const db = await getDatabase();
   
   const total = await db.getFirstAsync<{count: number}>('SELECT COUNT(*) as count FROM tramites');
   const finalizados = await db.getFirstAsync<{count: number}>("SELECT COUNT(*) as count FROM tramites WHERE UPPER(estado) LIKE '%FINALIZADO%' OR UPPER(estado) LIKE '%ENTREGADO%'");
@@ -162,6 +175,7 @@ export const getTotalCount = async (
   partido: string = "", 
   partida: string = ""
 ): Promise<number> => {
+  const db = await getDatabase();
   if (!db) return 0;
   
   let q = "SELECT COUNT(*) as count FROM tramites WHERE 1=1";
@@ -180,4 +194,15 @@ export const getTotalCount = async (
   
   const result = await db.getFirstAsync<{count: number}>(q, params);
   return result?.count || 0;
+};
+
+export const clearDatabase = async () => {
+  try {
+    const db = await getDatabase();
+    await db.execAsync(`DELETE FROM tramites;`);
+    console.log("Base de datos local limpiada correctamente tras el cierre de sesión.");
+  } catch (error) {
+    console.error("Error al limpiar la base de datos:", error);
+    throw error;
+  }
 };

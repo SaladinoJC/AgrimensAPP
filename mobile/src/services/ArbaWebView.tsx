@@ -6,9 +6,7 @@ interface ArbaWebViewProps {
   cuit: string;
   cit: string;
   rango?: { desde: string; hasta: string };
-  // Garantizamos que siempre devolvemos un array de trámites (o vacío si falla)
-  onSyncComplete: (rows: any[], error?: string) => void;
-}
+onSyncComplete: (html: string, error?: string) => void;}
 
 export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSyncComplete }) => {
   const webviewRef = useRef<WebView>(null);
@@ -23,7 +21,6 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
 
   const handleNavigationStateChange = (navState: any) => {
     const { url, loading } = navState;
-    
     // IMPORTANTE: Esperar a que la página cargue completamente antes de inyectar código
     if (loading) return; 
 
@@ -98,7 +95,7 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
        setStep(99); // Un paso que indica error de login para evitar loops
        if (step === 2) {
           window.setTimeout(() => {
-             onSyncComplete([], "Credenciales incorrectas o sesión expirada");
+             onSyncComplete("", "Credenciales incorrectas o sesión expirada");
           }, 1000);
        }
     }
@@ -108,12 +105,12 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'SUCCESS') {
-        onSyncComplete([String(msg.html || "")]);
+        onSyncComplete(String(msg.html || ""));
       } else {
-        onSyncComplete([""], msg.message);
+        onSyncComplete("", msg.message);
       }
     } catch (e) {
-      onSyncComplete([""], "Error parseando respuesta del WebView");
+      onSyncComplete("", "Error parseando respuesta del WebView");
     }
   };
 
@@ -123,11 +120,12 @@ export const ArbaWebView: React.FC<ArbaWebViewProps> = ({ cuit, cit, rango, onSy
       <WebView
         ref={webviewRef}
         source={{ uri: 'https://www16.arba.gov.ar/DSISIC/' }}
+        sharedCookiesEnabled={false}
+        incognito={true}
         onNavigationStateChange={handleNavigationStateChange}
         onMessage={handleMessage}
         javaScriptEnabled={true}
         domStorageEnabled={true}
-        sharedCookiesEnabled={true}
         injectedJavaScript={`
           window.alert = function(mensaje) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'ERROR', message: mensaje }));

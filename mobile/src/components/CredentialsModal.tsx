@@ -1,17 +1,16 @@
 import React from 'react';
 import {
   StyleSheet,
-  View,
-  Text,
   TouchableOpacity,
-  Modal,
   Alert,
+  Modal,
+  Text,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import { useStore } from '../store/useStore';
-import { X, LogOut, User } from 'lucide-react-native';
+import { LogOut, User, X } from 'lucide-react-native';
+import { useAuthManager } from '../services/useAuthManager';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
@@ -25,15 +24,14 @@ const C_WHITE = "#ffffff";
 interface CredentialsModalProps {
   visible: boolean;
   onClose: () => void;
-  onLogout: () => void;
 }
 
 export const CredentialsModal: React.FC<CredentialsModalProps> = ({
   visible,
   onClose,
-  onLogout,
 }) => {
-  const { cuit, logout } = useStore();
+  const { cuit } = useStore();
+  const { handleLogout: logout } = useAuthManager();
 
   const handleLogout = () => {
     Alert.alert(
@@ -48,22 +46,12 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         {
           text: 'Cerrar Sesión',
           style: 'destructive', 
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('isLoggedIn');
-              await SecureStore.deleteItemAsync('cuit');
-              await SecureStore.deleteItemAsync('cit');
-              logout();
-              onLogout();
-              onClose();
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo cerrar la sesión');
-            }
+          onPress: () => {logout();onClose()}
           },
-        },
-      ]
-    );
-  };
+      ],
+    )}
+  
+  
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -114,7 +102,7 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         </TouchableOpacity>
       </SafeAreaView>
     </Modal>
-  );
+  )
 };
 
 const styles = StyleSheet.create({

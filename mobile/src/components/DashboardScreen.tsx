@@ -25,11 +25,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     filterHasta,
     filterPartido,
     filterPartida,
+    refreshKey,
   } = useStore();
 
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const loadStats = async () => {
     setIsLoadingStats(true);
@@ -53,7 +53,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   // y recalcular si los filtros globales del store cambian.
   useEffect(() => {
     loadStats();
-  }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida]);
+  }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida,refreshKey]);
 
   const handleSearch = async () => {
     // Si los filtros cambian en el SearchFilters y actualizan el store,
@@ -62,7 +62,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   };
 
   const handleRefresh = async () => {
-    setRefreshKey((prev) => prev + 1);
     await loadStats();
   };
 

@@ -3,6 +3,16 @@ import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import { syncArbaHeadless } from './HeadlessSync';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 export const BACKGROUND_FETCH_TASK = 'background-sync-arba';
 
 let isTaskDefined = false;

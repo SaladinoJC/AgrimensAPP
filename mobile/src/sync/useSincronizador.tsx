@@ -1,45 +1,56 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { sincronizarPorFechaHeadless } from './headlessAdapter';
+import { sincronizarPorFechaHeadless } from './headlessAdapter'; // Asumo que tienes esto creado
 import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaHtml } from './parserDsisic';
 import { normalizarRango } from './sincronizacion';
-import { ArbaWebView } from '../services/ArbaWebView';
+import { ArbaWebView } from './../services/ArbaWebView';
+import { useStore } from '../store/useStore';
 
 export type SyncResult =
   | { ok: true; rows: any[] }
   | { ok: false; error: SyncError };
 
 export function useSincronizador() {
+  // Estado interno: Solo a este hook le importa si el WebView está activo o no
   const [webviewState, setWebviewState] = useState({ 
     active: false, 
     cuit: '', 
     cit: '', 
     rango: { desde: '', hasta: '' } 
   });
-  
+  const {setIsSyncing} = useStore();
   const resolvePromise = useRef<((res: SyncResult) => void) | null>(null);
 
   const sync = useCallback(async (creds: CredencialesArba, rangoInput?: Partial<RangoFechas>): Promise<SyncResult> => {
     const rango = normalizarRango(rangoInput);
     
     try {
-      // Intentar primero con el adapter headless (más rápido y en background)
+      // 1. Intentar la vía rápida e invisible primero
       const rows = await sincronizarPorFechaHeadless(creds, rango);
       return { ok: true, rows };
     } catch (e: any) {
       const err = e instanceof SyncError ? e : new SyncError('TECNICO', String(e));
       
-      // Si el error es TECNICO (falla de fetch, cookies o bloqueado por ARBA), 
-      // hacemos fallback inyectando y montando el WebView
+      // 2. Si ARBA nos bloqueó o pide sesión gráfica, levantamos el "Caballo de Troya"
       if (err.kind === 'TECNICO') {
         return new Promise((resolve) => {
           resolvePromise.current = resolve;
+          // Al cambiar este estado, React renderiza el SincronizadorComponent abajo
           setWebviewState({ active: true, cuit: creds.cuit, cit: creds.cit, rango });
         });
       }
       
-      // Si es otro tipo de error (ej: credenciales o parseo), no usamos WebView
       return { ok: false, error: err };
+    }
+  }, []);
+
+  // Función para cuando el usuario presiona la (X) roja
+  const cancelSync = useCallback(() => {
+    setWebviewState(prev => ({ ...prev, active: false }));
+    setIsSyncing(false);
+    if (resolvePromise.current) {
+      resolvePromise.current({ ok: false, error: new SyncError('TECNICO', "Sincronización cancelada por el usuario.") });
+      resolvePromise.current = null;
     }
   }, []);
 
@@ -63,6 +74,7 @@ export function useSincronizador() {
     }
   }, []);
 
+  // El componente que App.tsx va a renderizar sin saber qué hay adentro
   const SincronizadorComponent = webviewState.active ? (
     <ArbaWebView 
       cuit={webviewState.cuit} 
@@ -72,5 +84,5 @@ export function useSincronizador() {
     />
   ) : null;
 
-  return { sync, SincronizadorComponent };
+  return { sync, cancelSync, SincronizadorComponent };
 }

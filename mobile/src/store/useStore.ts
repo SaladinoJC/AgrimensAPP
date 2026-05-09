@@ -24,6 +24,7 @@ interface AppState {
   
   // Novedades
 
+  refreshKey: number; // Para forzar recarga de lista de trámites después de sincronizar
   
   // Métodos
   setCuit: (cuit: string) => void;
@@ -38,6 +39,8 @@ interface AppState {
   setFilterPartida: (partida: string) => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
+
+  setRefreshKey: () => void;
   
   // Novedades (Alertas de cambios de estado)
   novedades: Novedad[];
@@ -70,6 +73,9 @@ export const useStore = create<AppState>((set) => ({
   
   // Novedades
   novedades: [],
+  //reflesh lista de tramites al sincronizar
+
+  refreshKey: 0,
   
   // Métodos
   setCuit: (cuit) => set({ cuit }),
@@ -86,6 +92,7 @@ export const useStore = create<AppState>((set) => ({
   setPageSize: (size) => set({ pageSize: size }),
   setNovedades: (novedades) => set({ novedades }),
   clearNovedades: () => set({ novedades: [] }),
+  setRefreshKey: () => () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
   clearFilters: () => set({
     searchQuery: '',
     filterDesde: '',
@@ -105,5 +112,6 @@ export const useStore = create<AppState>((set) => ({
     filterPartida: '',
     currentPage: 1,
     novedades: [],
+    refreshKey: 0,
   }),
 }));

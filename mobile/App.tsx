@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,20 +9,19 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import * as Notifications from 'expo-notifications';
-import { useStore } from './src/store/useStore';
-import { initDB, upsertTramites } from './src/db/database';
-import { syncArbaHeadless, cancelSync } from './src/services/HeadlessSync';
-import { ArbaWebView } from './src/services/ArbaWebView';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, BellRing, User, Lock } from 'lucide-react-native';
+
+import { useStore } from './src/store/useStore';
+import { upsertTramites } from './src/db/database';
 import { DashboardScreen } from './src/components/DashboardScreen';
 import { CredentialsModal } from './src/components/CredentialsModal';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoginScreen } from './src/components/LoginScreen';
-import { registerBackgroundSync } from './src/services/BackgroundSyncRegistration';
-import { autenticarAccesoLocal } from './src/authLocal/authLocal';
 import { LoadingTramitesSpinner } from './src/components/ui/LoadingTramitesSpinner';
+
+import { useAppBoot } from './src/services/useAppBoot';
+import { useAuthManager } from './src/services/useAuthManager';
+import { useSincronizador } from './src/sync/useSincronizador';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -31,122 +30,66 @@ const C_CARD = "#1e2a42";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
-
 export default function App() {
   const {
     isLoggedIn,
     isSyncing,
     cuit,
     cit,
-    setCuit,
-    setCit,
-    setIsLoggedIn,
     setIsSyncing,
-    setSyncAbortController,
     novedades,
     setNovedades,
+    setRefreshKey,
   } = useStore();
-
-  const [appReady, setAppReady] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showWebView, setShowWebView] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Inicialización (Cargar BD y verificar si hay sesión guardada)
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        await initDB();
-        
-        const savedCuit = await SecureStore.getItemAsync('cuit');
-        const savedCit = await SecureStore.getItemAsync('cit');
-        
-        if (savedCuit && savedCit) {
-          setCuit(savedCuit);
-          setCit(savedCit);
-          setIsLoggedIn(true);
-        }
-        
-        try {
-          await registerBackgroundSync();
-        } catch (pushErr) {
-          console.log("Push init error", pushErr);
-        }
-        
-      } catch (e: any) {
-        Alert.alert("Error de Inicio", "Ocurrió un problema al inicializar: " + e.toString());
-      } finally {
-        setAppReady(true);
-      }
-    };
-    initializeApp();
-  }, []);
+  const { appReady } = useAppBoot();
+  const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
+  const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
 
-  // Funciones de Sincronización
+  // Lógica puente de Sincronización
   const handleSync = async () => {
-    if (isSyncing) return;
+    if (isSyncing || !cuit || !cit) return;
     setIsSyncing(true);
-    const controller = new AbortController();
-    setSyncAbortController(controller);
-    try {
-      setShowWebView(true);
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo iniciar la sincronización');
+    
+    const result = await sync({ cuit, cit });
+    
+    if (!result.ok) {
+      if (result.error?.message.includes("Credenciales") || result.error?.message.includes("sesión expirada")) {
+        Alert.alert("Sesión Expirada", result.error.message, [{ text: "Aceptar", onPress: () => {
+          setShowProfileModal(false);
+          handleLogout();
+        }}]);
+      } else {
+        Alert.alert("Error de Sincronización", result.error.message);
+      }
       setIsSyncing(false);
-      setSyncAbortController(null);
-    }
-  };
-
-  const handleSyncCancel = () => {
-    cancelSync();
-    setSyncAbortController(null);
-    setIsSyncing(false);
-    setShowWebView(false);
-  };
-
-  const handleSyncComplete = async (rows: any[], error?: string) => {
-    setShowWebView(false);
-    setIsSyncing(false); 
-    setSyncAbortController(null);
-
-    console.log("\nlog metodo handleSyncComplete APP.tsx\n")
-    console.log(rows)
-
-    if (error) {
-      Alert.alert("Error de Sincronización", error);
       return;
     }
-
+    
     try {
-      const novs = await upsertTramites(rows);
+      const novs = await upsertTramites(result.rows);
+      setRefreshKey(); // Forzar recarga de lista en Dashboard
       if (novs.length > 0) {
-        setNovedades(novs);
+        setNovedades(novs); 
       } else {
-        Alert.alert("Sincronización Exitosa", `Se procesaron ${rows.length} trámites (Sin novedades nuevas)`);
+        Alert.alert(
+          "Sincronización Exitosa", 
+          `Se procesaron ${result.rows.length} trámites.\nNo hay cambios de estado recientes.`
+        );
       }
-    } catch (dbError: any) {
-       Alert.alert("Error guardando datos", "Hubo un problema al guardar los trámites en tu teléfono.");
-       console.error(dbError);
+    } catch (dbError) {
+      Alert.alert("Error guardando datos", "Hubo un problema con la base de datos local.");
+    }
+    finally{
+      setIsSyncing(false);
     }
   };
 
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
-    if (!appReady) {
-      return (
-        <LoadingTramitesSpinner />
-      );
-    }
+    if (!appReady) return <LoadingTramitesSpinner />
 
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
@@ -170,14 +113,7 @@ export default function App() {
           <TouchableOpacity 
             style={styles.btnPrimary}
             activeOpacity={0.8}
-            onPress={async () => {
-              const result = await autenticarAccesoLocal();
-              if (result.ok) {
-                setIsAuthenticated(true);
-              } else {
-                Alert.alert("Acceso denegado", result.message);
-              }
-            }}
+            onPress={unlockApp}
           >
             <Text style={{ color: C_BG, fontWeight: 'bold', fontSize: 16 }}>Desbloquear Aplicación</Text>
           </TouchableOpacity>
@@ -201,25 +137,14 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <DashboardScreen onSync={handleSync} onSyncCancel={handleSyncCancel} />
+        <DashboardScreen onSync={handleSync} onSyncCancel={cancelSync} />
 
         <CredentialsModal
           visible={showProfileModal}
           onClose={() => setShowProfileModal(false)}
-          onLogout={() => {
-            setShowProfileModal(false);
-            // Si hace logout, reseteamos la autenticación para que vuelva a pedir PIN al próximo login si es necesario.
-            setIsAuthenticated(false);
-          }}
         />
 
-        {showWebView && (
-          <ArbaWebView
-            cuit={cuit}
-            cit={cit}
-            onSyncComplete={handleSyncComplete}
-          />
-        )}
+        {SincronizadorComponent}
 
         <Modal visible={novedades.length > 0} transparent animationType="slide">
           <View style={styles.modalBg}>
