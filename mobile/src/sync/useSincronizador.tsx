@@ -29,6 +29,7 @@ export function useSincronizador() {
       const rows = await sincronizarPorFechaHeadless(creds, rango);
       return { ok: true, rows };
     } catch (e: any) {
+      console.log("Fallo sincronizacion invisible (headless): ");
       const err = e instanceof SyncError ? e : new SyncError('TECNICO', String(e));
       
       // 2. Si ARBA nos bloqueó o pide sesión gráfica, levantamos el "Caballo de Troya"
