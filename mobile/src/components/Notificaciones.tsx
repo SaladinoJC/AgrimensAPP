@@ -4,6 +4,7 @@ import { Trash2, X, ChevronRight } from 'lucide-react-native';
 import { getNotificaciones, clearNotificaciones, getTramiteByNro } from '../db/database';
 import { TramiteDetail } from '../types/tramites-type';
 import { TramiteDetailModal } from './ui/TramiteDetailModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -55,7 +56,7 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose}><X color={C_TEXT} size={28} /></TouchableOpacity>
           <Text style={styles.title}>Centro de Novedades</Text>
@@ -84,7 +85,6 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
             )}
           />
         )}
-      </View>
 
       {selectedTramite && (
         <TramiteDetailModal
@@ -93,6 +93,7 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
           onClose={() => setSelectedTramite(null)} 
         />
       )}
+      </SafeAreaView>
     </Modal>
   );
 };
