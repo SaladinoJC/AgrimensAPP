@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: C_CARD,
     borderRadius: 12,
-    padding: 12,
+    padding: 10,
     marginHorizontal: 12,
     marginVertical: 6,
     borderLeftColor: C_PRIMARY,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   expediente: {
     fontSize: 16,
@@ -90,12 +90,12 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     color: C_ACCENT,
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: 6,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 4,
+    marginVertical: 2,
   },
   infoLabel: {
     fontSize: 12,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   badgeContainer: {
-    marginTop: 10,
+    marginTop: 6,
     alignItems: 'flex-start',
   },
   badge: {
