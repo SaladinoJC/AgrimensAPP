@@ -1,6 +1,5 @@
 import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaBuffer } from './parserDsisic';
-
 export async function sincronizarPorFechaHeadless(
   creds: CredencialesArba,
   rango: RangoFechas
@@ -8,12 +7,13 @@ export async function sincronizarPorFechaHeadless(
   const { cuit, cit } = creds;
   if (!cuit || !cit) throw new SyncError('CREDENCIALES_INVALIDAS', 'Faltan credenciales ARBA.');
 
+
   try {
     // --- 1. GET inicial a DSISIC ---
     let res1: Response;
     try {
       res1 = await fetch('https://www16.arba.gov.ar/DSISIC/');
-    } catch {
+    } catch (err) {
       throw new SyncError('ARBA_NO_DISPONIBLE', 'No se pudo conectar a ARBA/DSISIC.');
     }
 
@@ -36,7 +36,7 @@ export async function sincronizarPorFechaHeadless(
         throw new SyncError('CREDENCIALES_INVALIDAS', 'Credenciales incorrectas o sesión expirada.');
       }
 
-      await new Promise(r => setTimeout(r, 500)); // Espera cookies
+      await new Promise(r => setTimeout(r, 500)); 
 
       // --- 3. Asignar rol ---
       await fetch('https://www16.arba.gov.ar/DSISIC/asignarRol.do', {
@@ -45,7 +45,7 @@ export async function sincronizarPorFechaHeadless(
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       
-      await new Promise(r => setTimeout(r, 500)); // Espera cookies
+      await new Promise(r => setTimeout(r, 500)); 
     }
 
     // --- 4. Inicializar pantalla ---
@@ -67,17 +67,13 @@ export async function sincronizarPorFechaHeadless(
     const buffer = await resFechas.arrayBuffer();
     return parseTramitesFromPorFechaBuffer(buffer);
 
+  } catch (error) {
+    throw error;
   } finally {
-    // Se ejecutará SIEMPRE, haya fallado o no la extracción de datos.
     try {
-      console.log("Limpiando sesión en servidores de ARBA...");
-      // 1. Salimos del sistema DSISIC
       await fetch('https://www16.arba.gov.ar/DSISIC/salir.do', { method: 'GET' });
-      // 2. Salimos del SSO central
       await fetch('https://sso.arba.gov.ar/Login/salir', { method: 'GET' });
     } catch (e) {
-      // Si no hay red al momento de salir, no rompemos la app, solo lo ignoramos.
-      console.log("No se pudo enviar la petición de cierre de sesión a ARBA.");
     }
   }
 }

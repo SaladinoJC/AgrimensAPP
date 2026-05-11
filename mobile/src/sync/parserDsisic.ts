@@ -24,7 +24,17 @@ function seemsServerError(htmlLower: string): boolean {
 }
 
 export function decodeIso88591(buffer: ArrayBuffer): string {
-  return new TextDecoder('iso-8859-1').decode(buffer);
+  // En React Native, TextDecoder no soporta 'iso-8859-1'.
+  // Como ISO-8859-1 es un mapeo directo 1 a 1 con los primeros 256 caracteres de Unicode,
+  // leemos byte por byte y lo convertimos a String.
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  
+  for (let i = 0; i < bytes.length; i++) {
+    str += String.fromCharCode(bytes[i]);
+  }
+  
+  return str;
 }
 
 export function extractJsonArrayStringFromHtml(html: string): string {

@@ -29,6 +29,7 @@ export const syncArbaHeadless = async () => {
         trigger: null,
       });
     }
+   
   } catch (e) {
     const msg = e instanceof SyncError ? `${e.kind}: ${e.message}` : String(e);
     console.log("Background sync error:", msg);
