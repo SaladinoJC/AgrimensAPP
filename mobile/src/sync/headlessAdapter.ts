@@ -1,19 +1,25 @@
 import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaBuffer } from './parserDsisic';
+
+
 export async function sincronizarPorFechaHeadless(
   creds: CredencialesArba,
-  rango: RangoFechas
+  rango: RangoFechas,
+  signal?: AbortSignal
 ): Promise<any[]> {
-  const { cuit, cit } = creds;
-  if (!cuit || !cit) throw new SyncError('CREDENCIALES_INVALIDAS', 'Faltan credenciales ARBA.');
 
+  const { cuit, cit } = creds;
+
+  if (!cuit || !cit) throw new SyncError('CREDENCIALES_INVALIDAS', 'Faltan credenciales ARBA.');
 
   try {
     // --- 1. GET inicial a DSISIC ---
     let res1: Response;
     try {
-      res1 = await fetch('https://www16.arba.gov.ar/DSISIC/');
-    } catch (err) {
+      res1 = await fetch('https://www16.arba.gov.ar/DSISIC/', { signal });
+    } catch (err:any) {
+      // SI es error por cancelacion lo dejo pasar
+      if (err.name === 'AbortError') throw err;
       throw new SyncError('ARBA_NO_DISPONIBLE', 'No se pudo conectar a ARBA/DSISIC.');
     }
 
@@ -29,6 +35,7 @@ export async function sincronizarPorFechaHeadless(
         method: 'POST',
         body: bodySSO,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        signal,
       });
 
       const html2 = await res2.text();
@@ -43,13 +50,14 @@ export async function sincronizarPorFechaHeadless(
         method: 'POST',
         body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        signal,
       });
       
       await new Promise(r => setTimeout(r, 500)); 
     }
 
     // --- 4. Inicializar pantalla ---
-    await fetch('https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson');
+    await fetch('https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson', { signal });
 
     // --- 5. POST consulta por fechas ---
     const bodyFechas = `opcion=FEC&metodo=porFechaPdoPdaJson&tipoBusqueda=FEC&fechaDesde=${rango.desde}&fechaHasta=${rango.hasta}`;
@@ -58,6 +66,7 @@ export async function sincronizarPorFechaHeadless(
       method: 'POST',
       body: bodyFechas,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal,
     });
 
     if (!resFechas.ok) {

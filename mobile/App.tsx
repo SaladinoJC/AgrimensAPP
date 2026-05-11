@@ -85,6 +85,11 @@ export default function App() {
     }
   };
 
+  const handleCancelSync = () => {
+    cancelSync();
+    setIsSyncing(false);
+  }
+
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
@@ -141,7 +146,7 @@ export default function App() {
           </View>
         </View>
 
-        <DashboardScreen onSync={handleSync} onSyncCancel={cancelSync} />
+        <DashboardScreen onSync={handleSync} onSyncCancel={handleCancelSync} />
 
         <CredentialsModal
           visible={showProfileModal}

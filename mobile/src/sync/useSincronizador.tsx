@@ -18,20 +18,29 @@ export function useSincronizador() {
     rango: { desde: '', hasta: '' } 
   });
   const resolvePromise = useRef<((res: SyncResult) => void) | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const sync = useCallback(async (creds: CredencialesArba, rangoInput?: Partial<RangoFechas>): Promise<SyncResult> => {
     const rango = normalizarRango(rangoInput);
-    
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     try {
       // 1. Intentar la vía rápida e invisible primero
-      const rows = await sincronizarPorFechaHeadless(creds, rango);
+      const rows = await sincronizarPorFechaHeadless(creds, rango, signal);
+
       return { ok: true, rows };
-    } catch (e: any) {
+    } 
+    catch (e: any) {
+      if (e.name === 'AbortError') {
+        return { ok: false, error: new SyncError('TECNICO', "Sincronización cancelada.") };
+      }
       console.log("Fallo sincronizacion invisible (headless): ");
       const err = e instanceof SyncError ? e : new SyncError('TECNICO', String(e));
       
       // 2. Si ARBA nos bloqueó o pide sesión gráfica, levantamos el "Caballo de Troya"
       if (err.kind === 'TECNICO') {
+
         return new Promise((resolve) => {
           resolvePromise.current = resolve;
           // Al cambiar este estado, React renderiza el SincronizadorComponent abajo
@@ -45,6 +54,12 @@ export function useSincronizador() {
 
   // Función para cuando el usuario quiere calcelar la sincronización manual (cerrar el WebView)
   const cancelSync = useCallback(() => {
+    //Abortamos la petición Headless si está en proceso
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    //Abortamos el WebView si está activo
     setWebviewState(prev => ({ ...prev, active: false }));
     if (resolvePromise.current) {
       resolvePromise.current({ ok: false, error: new SyncError('TECNICO', "Sincronización cancelada por el usuario.") });
