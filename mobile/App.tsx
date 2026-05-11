@@ -8,7 +8,7 @@ import {
   Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Map, User, Lock } from 'lucide-react-native';
+import { Map, User, Lock, BellRing } from 'lucide-react-native';
 
 import { useStore } from './src/store/useStore';
 import { upsertTramites } from './src/db/database';
@@ -20,7 +20,8 @@ import { LoadingTramitesSpinner } from './src/components/ui/LoadingTramitesSpinn
 import { useAppBoot } from './src/services/useAppBoot';
 import { useAuthManager } from './src/services/useAuthManager';
 import { useSincronizador } from './src/sync/useSincronizador';
-import { NovedadesModal } from './src/components/NovedadesModal';
+import { NovedadesModal } from './src/components/ui/NovedadesModal';
+import { NotificacionesScreen } from './src/components/Notificaciones';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -35,6 +36,7 @@ export default function App() {
     setRefreshKey,
   } = useStore();
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showNotificaciones, setShowNotificaciones] = useState(false);
 
   const { appReady } = useAppBoot();
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
@@ -48,34 +50,36 @@ export default function App() {
     setIsSyncing(true);
 
     const result = await sync({ cuit: freshState.cuit, cit: freshState.cit });
-    
+
     if (!result.ok) {
       if (result.error?.message.includes("Credenciales") || result.error?.message.includes("sesión expirada")) {
-        Alert.alert("Sesión Expirada", result.error.message, [{ text: "Aceptar", onPress: () => {
-          setShowProfileModal(false);
-          handleLogout();
-        }}]);
+        Alert.alert("Sesión Expirada", result.error.message, [{
+          text: "Aceptar", onPress: () => {
+            setShowProfileModal(false);
+            handleLogout();
+          }
+        }]);
       } else {
         Alert.alert("Error de Sincronización", result.error.message);
       }
       setIsSyncing(false);
       return;
     }
-    
+
     try {
       const novs = await upsertTramites(result.rows);
       if (novs.length > 0) {
-        setNovedades(novs); 
+        setNovedades(novs);
       } else {
         Alert.alert(
-          "Sincronización Exitosa", 
+          "Sincronización Exitosa",
           `Se procesaron ${result.rows.length} trámites.\nNo hay cambios de estado recientes.`
         );
       }
     } catch (dbError) {
       Alert.alert("Error guardando datos", "Hubo un problema con la base de datos local.");
     }
-    finally{
+    finally {
       setIsSyncing(false);
       setRefreshKey(); // Forzar recarga de lista en Dashboard
     }
@@ -89,12 +93,12 @@ export default function App() {
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
       return (
-        <LoginScreen 
+        <LoginScreen
           onLoginSuccess={() => {
             // Cuando loguea por primera vez, asumimos que ya es seguro dejarlo pasar
             setIsAuthenticated(true);
             handleSync();
-          }} 
+          }}
         />
       );
     }
@@ -105,7 +109,7 @@ export default function App() {
         <View style={[styles.loadingBg, { padding: 20 }]}>
           <Lock color={C_PRIMARY} size={64} style={{ marginBottom: 20 }} />
           <Text style={{ color: C_TEXT, fontSize: 24, fontWeight: 'bold', marginBottom: 40 }}>AgrimensAPP</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.btnPrimary}
             activeOpacity={0.8}
             onPress={unlockApp}
@@ -124,12 +128,17 @@ export default function App() {
             <Map color={C_PRIMARY} size={24} />
             <Text style={styles.appBarTitle}>AgrimensAPP</Text>
           </View>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => setShowProfileModal(true)}
-          >
-            <User size={24} color={C_PRIMARY} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <TouchableOpacity onPress={() => setShowNotificaciones(true)}>
+              <BellRing size={24} color={C_PRIMARY} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => setShowProfileModal(true)}
+            >
+              <User size={24} color={C_PRIMARY} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <DashboardScreen onSync={handleSync} onSyncCancel={cancelSync} />
@@ -141,9 +150,18 @@ export default function App() {
 
         {SincronizadorComponent}
 
-        <NovedadesModal 
-          novedades={novedades} 
-          onClose={() => setNovedades([])} 
+        <NovedadesModal
+          novedades={novedades}
+          onClose={() => setNovedades([])}
+          onOpenNotificaciones={() => {
+            setNovedades([]);
+            setShowNotificaciones(true);
+          }}
+        />
+
+        <NotificacionesScreen
+          visible={showNotificaciones}
+          onClose={() => setShowNotificaciones(false)}
         />
       </>
     );

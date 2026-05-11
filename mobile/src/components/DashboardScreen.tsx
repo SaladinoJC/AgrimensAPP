@@ -25,6 +25,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     filterHasta,
     filterPartido,
     filterPartida,
+    filterEstado,
     refreshKey,
   } = useStore();
 
@@ -39,7 +40,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         filterDesde,
         filterHasta,
         filterPartido,
-        filterPartida
+        filterPartida,
+        filterEstado
       );
       setTotalCount(count);
     } catch (error) {
@@ -49,21 +51,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-  // Cargar estadísticas al montar el componente 
-  // y recalcular si los filtros globales del store cambian.
+  // recalcular si los filtros globales del store cambian.
   useEffect(() => {
     loadStats();
-  }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida,refreshKey]);
-
-  const handleSearch = async () => {
-    // Si los filtros cambian en el SearchFilters y actualizan el store,
-    // el useEffect de arriba ya se encarga de llamar a loadStats automáticamente
-    await loadStats();
-  };
-
-  const handleRefresh = async () => {
-    await loadStats();
-  };
+  }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida, filterEstado, refreshKey]);
 
   return (
     <View style={styles.container}>
@@ -71,14 +62,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       <SyncButton onSync={onSync} onCancel={onSyncCancel} />
 
       {/* Filtros de búsqueda */}
-      <SearchFilters onSearch={handleSearch} />
+      <SearchFilters />
 
       <View style={styles.content}>
         {/* Lista de tramites */}
         <View style={styles.listContainer}>
           <TramiteList 
             key={refreshKey} 
-            onRefresh={handleRefresh} 
             isLoading={isLoadingStats} 
           />
         </View>

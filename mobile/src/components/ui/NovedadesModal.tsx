@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { BellRing } from 'lucide-react-native';
-import { Novedad } from '../novedades/types';
+import { Novedad } from '../../novedades/types';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -13,9 +13,10 @@ const C_TEXT2 = "#90a4ae";
 interface NovedadesModalProps {
   novedades: Novedad[];
   onClose: () => void;
+  onOpenNotificaciones: () => void;
 }
 
-export const NovedadesModal: React.FC<NovedadesModalProps> = ({ novedades, onClose }) => {
+export const NovedadesModal: React.FC<NovedadesModalProps> = ({ novedades, onClose, onOpenNotificaciones }) => {
   return (
     <Modal visible={novedades.length > 0} transparent animationType="slide">
       <View style={styles.modalBg}>
@@ -24,7 +25,7 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({ novedades, onClo
             <BellRing color={C_AMBER} size={24} style={styles.icon} />
             <Text style={styles.modalTitle}>¡Novedades!</Text>
           </View>
-          
+
           <FlatList
             data={novedades}
             keyExtractor={(item) => item.nro}
@@ -35,13 +36,19 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({ novedades, onClo
               </View>
             )}
           />
-          
-          <TouchableOpacity 
-            style={styles.btnPrimary} 
-            onPress={onClose}
-          >
-            <Text style={styles.btnText}>Cerrar</Text>
-          </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, alignItems: 'center' }}>
+            <TouchableOpacity
+              style={styles.btnPrimary}
+              onPress={onClose}
+            >
+              <Text style={styles.btnText}>Cerrar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.btnPrimary} onPress={onOpenNotificaciones}>
+              <Text style={styles.btnText}>Ver Novedades</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>

@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Novedad } from '../novedades/types';
+import { Tramite, TramiteDetail } from '../types/tramites-type';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
@@ -30,6 +31,15 @@ export const initDB = async () => {
         oblea TEXT, 
         demora TEXT, 
         final_estimada TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS notificaciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nroExpediente TEXT,
+        viejo_estado TEXT,
+        nuevo_estado TEXT,
+        fecha TEXT,
+        leida INTEGER DEFAULT 0
     );
   `);
 };
@@ -106,6 +116,19 @@ export const upsertTramites = async (rows: any[]) => {
         final_est
       ]);
     }
+
+    if (novedades.length > 0) {
+      const stmtNotif = await db.prepareAsync(`
+        INSERT INTO notificaciones (nroExpediente, viejo_estado, nuevo_estado, fecha) 
+        VALUES (?, ?, ?, ?)
+      `);
+      const fechaNow = new Date().toISOString();
+      for (const nov of novedades) {
+        await stmtNotif.executeAsync([nov.nro, nov.viejo, nov.nuevo, fechaNow]);
+      }
+      await stmtNotif.finalizeAsync();
+    }
+
     await db.execAsync('COMMIT');
   } catch(e) {
     await db.execAsync('ROLLBACK');
@@ -123,7 +146,8 @@ export const getTramites = async (
   desde: string = "", 
   hasta: string = "", 
   partido: string = "", 
-  partida: string = "", 
+  partida: string = "",
+  estado: string = "",
   limit: number = 50, 
   offset: number = 0
 ) => {
@@ -138,7 +162,7 @@ export const getTramites = async (
   if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
   if (partido) { q += " AND partido = ?"; params.push(partido); }
   if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
-
+  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
   if (search) {
     const s = `%${search}%`;
     q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
@@ -173,7 +197,8 @@ export const getTotalCount = async (
   desde: string = "", 
   hasta: string = "", 
   partido: string = "", 
-  partida: string = ""
+  partida: string = "",
+  estado: string = ""
 ): Promise<number> => {
   const db = await getDatabase();
   if (!db) return 0;
@@ -185,7 +210,7 @@ export const getTotalCount = async (
   if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
   if (partido) { q += " AND partido = ?"; params.push(partido); }
   if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
-
+  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
   if (search) {
     const s = `%${search}%`;
     q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
@@ -205,4 +230,19 @@ export const clearDatabase = async () => {
     console.error("Error al limpiar la base de datos:", error);
     throw error;
   }
+};
+
+export const getNotificaciones = async () => {
+  const dbSegura = await getDatabase();
+  return await dbSegura.getAllAsync(`SELECT * FROM notificaciones ORDER BY fecha DESC`);
+};
+
+export const clearNotificaciones = async () => {
+  const dbSegura = await getDatabase();
+  await dbSegura.execAsync(`DELETE FROM notificaciones;`);
+};
+
+export const getTramiteByNro = async (nroExpediente: string) => {
+  const dbSegura = await getDatabase();
+  return await dbSegura.getFirstAsync(`SELECT * FROM tramites WHERE nroExpediente = ?`, [nroExpediente]) as TramiteDetail;
 };

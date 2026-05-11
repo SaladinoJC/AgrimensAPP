@@ -16,6 +16,7 @@ interface AppState {
   filterHasta: string;
   filterPartido: string;
   filterPartida: string;
+  filterEstado: string;
   
   // Paginación
   currentPage: number;
@@ -37,7 +38,7 @@ interface AppState {
   setFilterPartida: (partida: string) => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
-
+  setFilterEstado: (estado: string) => void;
   setRefreshKey: () => void;
   
   // Novedades (Alertas de cambios de estado)
@@ -63,7 +64,7 @@ export const useStore = create<AppState>((set) => ({
   filterHasta: '',
   filterPartido: '',
   filterPartida: '',
-  
+  filterEstado: '',
   // Paginación
   currentPage: 1,
   pageSize: 50,
@@ -86,6 +87,7 @@ export const useStore = create<AppState>((set) => ({
   setFilterPartida: (partida) => set({ filterPartida: partida, currentPage: 1 }),
   setCurrentPage: (page) => set({ currentPage: page }),
   setPageSize: (size) => set({ pageSize: size }),
+  setFilterEstado: (estado) => set({ filterEstado: estado, currentPage: 1 }),
   setNovedades: (novedades) => set({ novedades }),
   clearNovedades: () => set({ novedades: [] }),
   setRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
@@ -95,6 +97,7 @@ export const useStore = create<AppState>((set) => ({
     filterHasta: '',
     filterPartido: '',
     filterPartida: '',
+    filterEstado: '',
     currentPage: 1,
   }),
   logout: () => set({
@@ -106,6 +109,7 @@ export const useStore = create<AppState>((set) => ({
     filterHasta: '',
     filterPartido: '',
     filterPartida: '',
+    filterEstado: '',
     currentPage: 1,
     novedades: [],
     refreshKey: 0,

@@ -8,24 +8,24 @@ import {
 import { useStore } from '../store/useStore';
 import { getTramites } from '../db/database';
 import { TramiteCard } from './ui/TramiteCard';
-import { TramiteDetailModal } from './TramiteDetailModal';
+import { TramiteDetailModal } from './ui/TramiteDetailModal';
 import { LoadingTramitesSpinner } from './ui/LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
 const C_TEXT2 = "#90a4ae";
 
 interface TramiteListProps {
-  onRefresh: () => void;
   isLoading?: boolean;
 }
 
-export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading = false }) => {
+export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) => {
   const {
     searchQuery,
     filterDesde,
     filterHasta,
     filterPartido,
     filterPartida,
+    filterEstado,
     currentPage,
     pageSize,
     isSyncing,
@@ -40,7 +40,7 @@ export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading =
 
   useEffect(() => {
     loadTramites();
-  }, [currentPage, searchQuery, filterDesde, filterHasta, filterPartido, filterPartida]);
+  }, [currentPage, searchQuery, filterDesde, filterHasta, filterPartido, filterPartida, filterEstado]);
 
   useEffect(() => {
     if (tramites.length > 0) {
@@ -59,6 +59,7 @@ export const TramiteList: React.FC<TramiteListProps> = ({ onRefresh, isLoading =
         filterHasta,
         filterPartido,
         filterPartida,
+        filterEstado,
         pageSize,
         offset
       );

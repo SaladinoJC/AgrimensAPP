@@ -8,36 +8,44 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../store/useStore';
-import { Search, X, Calendar, Trash } from 'lucide-react-native';
+import { Search, X, Calendar, Trash, ChevronDown } from 'lucide-react-native';
+import { SelectModal } from './ui/SelectModal';
 
-const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
 
-interface SearchFiltersProps {
-  onSearch: () => void;
-}
+const ESTADOS_OPC = [
+  { label: 'Todos los estados', value: '' },
+  { label: 'Finalizado', value: 'FINALIZADO' },
+  { label: 'Pendiente', value: 'PENDIENTE' },
+  { label: 'En Curso', value: 'EN CURSO' },
+  { label: 'Rechazado', value: 'RECHAZADO' },
+]
 
-export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
+
+export const SearchFilters = () => {
   const {
     searchQuery,
     filterDesde,
     filterHasta,
     filterPartido,
     filterPartida,
+    filterEstado,
     setSearchQuery,
     setFilterDesde,
     setFilterHasta,
     setFilterPartido,
     setFilterPartida,
+    setFilterEstado,
     clearFilters,
   } = useStore();
 
   const [showDesdeModal, setShowDesdeModal] = useState(false);
   const [showHastaModal, setShowHastaModal] = useState(false);
+  const [showEstadoModal, setShowEstadoModal] = useState(false);
 
   const formatLocalDate = (date: Date) => {
     const year = date.getFullYear();
@@ -47,35 +55,16 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
   };
 
   const handleDesdeChange = (event: any, selectedDate?: Date) => {
-    if (event.type === 'dismissed') {
-      setShowDesdeModal(false);
-      return;
-    }
-
-    if (event.type === 'set' && selectedDate) {
-      setFilterDesde(formatLocalDate(selectedDate));
-      setShowDesdeModal(false);
-      onSearch(); 
-    }
+    setShowDesdeModal(false);
+    if (event.type === 'set' && selectedDate) setFilterDesde(formatLocalDate(selectedDate));
   };
 
   const handleHastaChange = (event: any, selectedDate?: Date) => {
-    if (event.type === 'dismissed') {
-      setShowHastaModal(false);
-      return;
-    }
-
-    if (event.type === 'set' && selectedDate) {
-      setFilterHasta(formatLocalDate(selectedDate));
-      setShowHastaModal(false);
-      onSearch(); 
-    }
+    setShowHastaModal(false);
+    if (event.type === 'set' && selectedDate) setFilterHasta(formatLocalDate(selectedDate));
   };
 
-  const handleClear = () => {
-    clearFilters();
-    onSearch(); 
-  };
+  const estadoSeleccionado = ESTADOS_OPC.find(e => e.value === filterEstado) || ESTADOS_OPC[0];
 
   return (
     <View style={styles.container}>
@@ -88,10 +77,9 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           returnKeyType="search"
-          onSubmitEditing={onSearch}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setSearchQuery('')}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
@@ -101,29 +89,15 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
       </View>
 
       <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setShowDesdeModal(true)}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.dateButton} onPress={() => setShowDesdeModal(true)}>
           <Calendar size={16} color={C_PRIMARY} />
-          <Text style={styles.dateButtonText}>
-            {filterDesde || 'Desde'}
-          </Text>
+          <Text style={styles.dateButtonText}>{filterDesde || 'Desde'}</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setShowHastaModal(true)}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.dateButton} onPress={() => setShowHastaModal(true)}>
           <Calendar size={16} color={C_PRIMARY} />
-          <Text style={styles.dateButtonText}>
-            {filterHasta || 'Hasta'}
-          </Text>
+          <Text style={styles.dateButtonText}>{filterHasta || 'Hasta'}</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.filterRow}>
         <TextInput
           style={[styles.filterInput, { flex: 1, marginRight: 8 }]}
@@ -133,7 +107,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
           onChangeText={setFilterPartido}
         />
         <TextInput
-          style={[styles.filterInput, { flex: 1 }]}
+          style={[styles.filterInput, { flex: 1, marginRight: 8 }]}
           placeholder="Partida"
           placeholderTextColor={C_TEXT2}
           value={filterPartida}
@@ -142,18 +116,18 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
       </View>
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={onSearch}
-          activeOpacity={0.8}
+        <TouchableOpacity 
+          style={[styles.filterInput, { flex: 1.5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+          onPress={() => setShowEstadoModal(true)}
         >
-          <Search size={16} color={C_BG} />
-          <Text style={styles.searchButtonText}>BUSCAR</Text>
+          <Text style={{ color: filterEstado ? C_TEXT : C_TEXT2, fontSize: 14 }} numberOfLines={1}>
+            {filterEstado ? estadoSeleccionado.label : 'Estado'}
+          </Text>
+          <ChevronDown size={16} color={C_TEXT2} />
         </TouchableOpacity>
-
         <TouchableOpacity
-          style={styles.clearButton}
-          onPress={handleClear}
+          style={styles.clearButton}  
+          onPress={clearFilters}
           activeOpacity={0.8}
         >
           <Trash size={16} color={C_TEXT} />
@@ -161,22 +135,38 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
         </TouchableOpacity>
       </View>
 
-      {showDesdeModal && (
+      {
+        showDesdeModal &&
         <DateTimePicker
-          value={filterDesde ? new Date(filterDesde + 'T12:00:00') : new Date()}
+          value={filterDesde ?
+            new Date(filterDesde + 'T12:00:00')
+            : new Date()}
           mode="date"
           onChange={handleDesdeChange}
         />
-      )}
-
-      {showHastaModal && (
+      }
+      {
+        showHastaModal &&
         <DateTimePicker
-          value={filterHasta ? new Date(filterHasta + 'T12:00:00') : new Date()}
+          value={filterHasta
+            ? new Date(filterHasta + 'T12:00:00')
+            : new Date()}
           mode="date"
           onChange={handleHastaChange}
         />
-      )}
-    </View>
+      }
+
+
+      <SelectModal
+        visible={showEstadoModal}
+        title="Filtrar por Estado"
+        options={ESTADOS_OPC}
+        selectedValue={filterEstado}
+        onSelect={(valor) => setFilterEstado(valor)}
+        onClose={() => setShowEstadoModal(false)}
+      />
+
+    </View >
   );
 };
 
@@ -233,21 +223,6 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     gap: 8,
-  },
-  searchButton: {
-    flex: 1,
-    backgroundColor: C_PRIMARY,
-    borderRadius: 8,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchButtonText: {
-    color: C_BG,
-    marginLeft: 6,
-    fontWeight: 'bold',
-    fontSize: 14,
   },
   clearButton: {
     paddingHorizontal: 14,
