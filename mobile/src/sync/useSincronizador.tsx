@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { sincronizarPorFechaHeadless } from './headlessAdapter'; // Asumo que tienes esto creado
+import { sincronizarPorFechaHeadless } from './headlessAdapter'; 
 import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaHtml } from './parserDsisic';
 import { normalizarRango } from './sincronizacion';
@@ -10,59 +10,58 @@ export type SyncResult =
   | { ok: false; error: SyncError };
 
 export function useSincronizador() {
-  // Estado interno: Solo a este hook le importa si el WebView está activo o no
-  const [webviewState, setWebviewState] = useState({ 
-    active: false, 
-    cuit: '', 
-    cit: '', 
-    rango: { desde: '', hasta: '' } 
-  });
+  const [webviewState, setWebviewState] = useState({ active: false, cuit: '', cit: '', rango: { desde: '', hasta: '' } });
   const resolvePromise = useRef<((res: SyncResult) => void) | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const sync = useCallback(async (creds: CredencialesArba, rangoInput?: Partial<RangoFechas>): Promise<SyncResult> => {
-    const rango = normalizarRango(rangoInput);
+  // FUNCIÓN Intentar vía Headless 
+  const ejecutarSyncHeadless = async (creds: CredencialesArba, rango: RangoFechas): Promise<SyncResult> => {
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
+    const rows = await sincronizarPorFechaHeadless(creds, rango, signal);
+    return { ok: true, rows };
+  };
 
+  // FUNCIÓN Intentar vía WebView
+  const ejecutarSyncWebView = (creds: CredencialesArba, rango: RangoFechas): Promise<SyncResult> => {
+    return new Promise((resolve) => {
+      resolvePromise.current = resolve;
+      setWebviewState({ active: true, cuit: creds.cuit, cit: creds.cit, rango });
+    });
+  };
+
+  // FUNCIÓN PRINCIPAL DE SINCRONIZACIÓN
+  const sync = useCallback(async (creds: CredencialesArba, rangoInput?: Partial<RangoFechas>): Promise<SyncResult> => {
+    const rango = normalizarRango(rangoInput);
+    
     try {
-      // 1. Intentar la vía rápida e invisible primero
-      const rows = await sincronizarPorFechaHeadless(creds, rango, signal);
+      // 1. headless primero, porque es más rápido y menos propenso a fallar por bloqueos de ARBA. Si falla, va al catch y prueba con WebView.
+      return await ejecutarSyncHeadless(creds, rango);
 
-      return { ok: true, rows };
-    } 
-    catch (e: any) {
+    } catch (e: any) {
       if (e.name === 'AbortError') {
         return { ok: false, error: new SyncError('TECNICO', "Sincronización cancelada.") };
       }
-      console.log("Fallo sincronizacion invisible (headless): ");
+
       const err = e instanceof SyncError ? e : new SyncError('TECNICO', String(e));
       
-      // 2. Si ARBA nos bloqueó o pide sesión gráfica, levantamos el "Caballo de Troya"
+      // 2. Si es un error técnico (ARBA nos bloqueó), delegamos al segundo método
       if (err.kind === 'TECNICO') {
-
-        return new Promise((resolve) => {
-          resolvePromise.current = resolve;
-          // Al cambiar este estado, React renderiza el SincronizadorComponent abajo
-          setWebviewState({ active: true, cuit: creds.cuit, cit: creds.cit, rango });
-        });
+        return ejecutarSyncWebView(creds, rango);
       }
       
       return { ok: false, error: err };
     }
   }, []);
 
-  // Función para cuando el usuario quiere calcelar la sincronización manual (cerrar el WebView)
   const cancelSync = useCallback(() => {
-    //Abortamos la petición Headless si está en proceso
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    //Abortamos el WebView si está activo
     setWebviewState(prev => ({ ...prev, active: false }));
     if (resolvePromise.current) {
-      resolvePromise.current({ ok: false, error: new SyncError('TECNICO', "Sincronización cancelada por el usuario.") });
+      resolvePromise.current({ ok: false, error: new SyncError('TECNICO', "Sincronización cancelada.") });
       resolvePromise.current = null;
     }
   }, []);
@@ -73,11 +72,7 @@ export function useSincronizador() {
     resolvePromise.current = null;
     
     if (!resolve) return;
-
-    if (error) {
-      resolve({ ok: false, error: new SyncError('TECNICO', error) });
-      return;
-    }
+    if (error) return resolve({ ok: false, error: new SyncError('TECNICO', error) });
 
     try {
       const rows = parseTramitesFromPorFechaHtml(html);
@@ -88,12 +83,7 @@ export function useSincronizador() {
   }, []);
 
   const SincronizadorComponent = webviewState.active ? (
-    <ArbaWebView 
-      cuit={webviewState.cuit} 
-      cit={webviewState.cit} 
-      rango={webviewState.rango} 
-      onSyncComplete={onWebviewComplete} 
-    />
+    <ArbaWebView cuit={webviewState.cuit} cit={webviewState.cit} rango={webviewState.rango} onSyncComplete={onWebviewComplete} />
   ) : null;
 
   return { sync, cancelSync, SincronizadorComponent };

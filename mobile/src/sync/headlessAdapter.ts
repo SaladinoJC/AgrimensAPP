@@ -1,32 +1,13 @@
 import { CredencialesArba, RangoFechas, SyncError } from './types';
 import { parseTramitesFromPorFechaBuffer } from './parserDsisic';
 
-
-export async function sincronizarPorFechaHeadless(
-  creds: CredencialesArba,
-  rango: RangoFechas,
-  signal?: AbortSignal
-): Promise<any[]> {
-
-  const { cuit, cit } = creds;
-
-  if (!cuit || !cit) throw new SyncError('CREDENCIALES_INVALIDAS', 'Faltan credenciales ARBA.');
-
+// FUNCIÓN DE VALIDACIÓN 
+export async function validarCredencialesHeadless(cuit: string, cit: string, signal?: AbortSignal): Promise<void> {
   try {
-    // --- 1. GET inicial a DSISIC ---
-    let res1: Response;
-    try {
-      res1 = await fetch('https://www16.arba.gov.ar/DSISIC/', { signal });
-    } catch (err:any) {
-      // SI es error por cancelacion lo dejo pasar
-      if (err.name === 'AbortError') throw err;
-      throw new SyncError('ARBA_NO_DISPONIBLE', 'No se pudo conectar a ARBA/DSISIC.');
-    }
-
+    const res1 = await fetch('https://www16.arba.gov.ar/DSISIC/', { signal });
     const html1 = await res1.text();
     const ltMatch = html1.match(/name="lt"\s+value="([^"]+)"/);
 
-    // --- 2. Si aparece login SSO ---
     if (ltMatch) {
       const lt = ltMatch[1];
       const bodySSO = `version=2&CUIT=${cuit}&clave_Cuit=${cit}&username=${cuit}&password=${cit}&userComponent=CUIT&lt=${lt}`;
@@ -42,26 +23,48 @@ export async function sincronizarPorFechaHeadless(
       if (html2.toLowerCase().includes('sso.arba.gov.ar/login')) {
         throw new SyncError('CREDENCIALES_INVALIDAS', 'Credenciales incorrectas o sesión expirada.');
       }
-
-      await new Promise(r => setTimeout(r, 500)); 
-
-      // --- 3. Asignar rol ---
-      await fetch('https://www16.arba.gov.ar/DSISIC/asignarRol.do', {
-        method: 'POST',
-        body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        signal,
-      });
-      
-      await new Promise(r => setTimeout(r, 500)); 
     }
+  } catch (err: any) {
+    if (err.name === 'AbortError') throw err;
+    if (err instanceof SyncError) throw err;
+    throw new SyncError('ARBA_NO_DISPONIBLE', 'No se pudo conectar a ARBA.');
+  }
+}
 
-    // --- 4. Inicializar pantalla ---
+// FUNCIÓN DE LOGOUT
+export async function logoutHeadless(): Promise<void> {
+  try {
+    await fetch('https://www16.arba.gov.ar/DSISIC/salir.do', { method: 'GET' });
+    await fetch('https://sso.arba.gov.ar/Login/salir', { method: 'GET' });
+  } catch (e) {
+    console.log("No se pudo cerrar la sesión remota.");
+  }
+}
+
+//  FUNCIÓN PRINCIPAL DE SINCRONIZACIÓN ---
+export async function sincronizarPorFechaHeadless(
+  creds: CredencialesArba, 
+  rango: RangoFechas, 
+  signal?: AbortSignal
+): Promise<any[]> {
+  const { cuit, cit } = creds;
+  if (!cuit || !cit) throw new SyncError('CREDENCIALES_INVALIDAS', 'Faltan credenciales.');
+
+  try {
+    await validarCredencialesHeadless(cuit, cit, signal);
+
+    await new Promise(r => setTimeout(r, 500)); 
+    await fetch('https://www16.arba.gov.ar/DSISIC/asignarRol.do', {
+      method: 'POST',
+      body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal,
+    });
+    
+    await new Promise(r => setTimeout(r, 500)); 
     await fetch('https://www16.arba.gov.ar/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson', { signal });
 
-    // --- 5. POST consulta por fechas ---
     const bodyFechas = `opcion=FEC&metodo=porFechaPdoPdaJson&tipoBusqueda=FEC&fechaDesde=${rango.desde}&fechaHasta=${rango.hasta}`;
-
     const resFechas = await fetch('https://www16.arba.gov.ar/DSISIC/PorFechaJson.do', {
       method: 'POST',
       body: bodyFechas,
@@ -69,20 +72,12 @@ export async function sincronizarPorFechaHeadless(
       signal,
     });
 
-    if (!resFechas.ok) {
-      throw new SyncError('ARBA_NO_DISPONIBLE', `ARBA/DSISIC respondió ${resFechas.status}.`);
-    }
+    if (!resFechas.ok) throw new SyncError('ARBA_NO_DISPONIBLE', `Error HTTP ${resFechas.status}`);
 
     const buffer = await resFechas.arrayBuffer();
     return parseTramitesFromPorFechaBuffer(buffer);
 
-  } catch (error) {
-    throw error;
   } finally {
-    try {
-      await fetch('https://www16.arba.gov.ar/DSISIC/salir.do', { method: 'GET' });
-      await fetch('https://sso.arba.gov.ar/Login/salir', { method: 'GET' });
-    } catch (e) {
-    }
+    await logoutHeadless();
   }
 }

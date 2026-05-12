@@ -17,12 +17,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStore } from '../store/useStore';
 import { useBiometric } from '../authLocal/useBiometric';
 import { Lock, Fingerprint, Eye, EyeOff } from 'lucide-react-native';
+import { logoutHeadless, validarCredencialesHeadless } from '../sync/headlessAdapter';
+import { SyncError } from '../sync/types';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";
-const C_RED = "#ef5350";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
 
@@ -71,25 +72,35 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    if (!cuit.trim() || !cit.trim()) {
+    const cuitLimpio = cuit.trim();
+    const citLimpio = cit.trim();
+
+    if (!cuitLimpio || !citLimpio) {
       Alert.alert('Error', 'Por favor completa CUIT y CIT');
       return;
     }
 
     setIsLoading(true);
     try {
-      await SecureStore.setItemAsync('cuit', cuit);
-      await SecureStore.setItemAsync('cit', cit);
+      await validarCredencialesHeadless(cuitLimpio, citLimpio);
+      await logoutHeadless();
+      
+      await SecureStore.setItemAsync('cuit', cuitLimpio);
+      await SecureStore.setItemAsync('cit', citLimpio);
       await AsyncStorage.setItem('isLoggedIn', 'true');
       
-      storeCuit(cuit);
-      storeCit(cit);
+      storeCuit(cuitLimpio);
+      storeCit(citLimpio);
       setIsLoggedIn(true);
       
       onLoginSuccess();
 
     } catch (error) {
-      Alert.alert('Error', 'No se pudieron guardar las credenciales');
+      if (error instanceof SyncError) {
+        Alert.alert('Acceso Denegado', error.message);
+      } else {
+        Alert.alert('Error de Conexión', 'No se pudo verificar la identidad con ARBA. Intente nuevamente.');
+      }
     } finally {
       setIsLoading(false);
     }
