@@ -127,10 +127,11 @@ export default function App() {
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
-    if (!appReady) hideAsync();
+    if (!appReady) return;
 
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
+      hideAsync();
       return (
         <LoginScreen
           onLoginSuccess={() => {
@@ -144,6 +145,7 @@ export default function App() {
 
     // 3. Si SÍ hay sesión, pero aún no se ha autenticado con PIN/Huella
     if (!isAuthenticated) {
+      hideAsync();
       return (
         <View style={[styles.loadingBg, { padding: 20 }]}>
           <Lock color={C_PRIMARY} size={64} style={{ marginBottom: 20 }} />
