@@ -9,14 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, User, Lock, BellRing } from 'lucide-react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 
 import { useStore } from './src/store/useStore';
 import { upsertTramites } from './src/db/database';
 import { DashboardScreen } from './src/components/DashboardScreen';
 import { CredentialsModal } from './src/components/CredentialsModal';
 import { LoginScreen } from './src/components/LoginScreen';
-import { LoadingTramitesSpinner } from './src/components/ui/LoadingTramitesSpinner';
 
 import { useAppBoot } from './src/services/useAppBoot';
 import { useAuthManager } from './src/services/useAuthManager';
@@ -43,7 +42,7 @@ export default function App() {
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
   const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
 
-  SplashScreen.preventAutoHideAsync();
+  preventAutoHideAsync();
 
   // Lógica puente de Sincronización
   const handleSync = async () => {
@@ -96,7 +95,7 @@ export default function App() {
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
-    if (!appReady) SplashScreen.hideAsync();
+    if (!appReady) hideAsync();
 
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
