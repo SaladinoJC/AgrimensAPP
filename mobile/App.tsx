@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   Text,
+  AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, User, Lock, BellRing } from 'lucide-react-native';
@@ -42,7 +43,38 @@ export default function App() {
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
   const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
 
+  const appState = useRef(AppState.currentState);
+  const timestampFondo = useRef<number | null>(null);
+  const TIEMPO_MAXIMO_MINUTOS = 5;
   preventAutoHideAsync();
+
+  useEffect(() => {
+    const subscripcion = AppState.addEventListener('change', (nextAppState) => {
+      
+      if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+        // La app se minimizó o se bloqueó la pantalla del celular: Empezamos a contar
+        timestampFondo.current = Date.now();
+      } 
+      
+      else if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // La app volvió a primer plano: Verificamos cuánto tiempo pasó
+        if (timestampFondo.current) {
+          const tiempoPasadoMs = Date.now() - timestampFondo.current;
+          const minutosPasados = tiempoPasadoMs / (1000 * 60);
+
+          if (minutosPasados >= TIEMPO_MAXIMO_MINUTOS) {
+            // Pasó el tiempo límite: Quitamos la autenticación para que pida huella/PIN
+            setIsAuthenticated(false);
+          }
+        }
+        // Reseteamos el reloj
+        timestampFondo.current = null;
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => subscripcion.remove();
+  }, [setIsAuthenticated]);
 
   // Lógica puente de Sincronización
   const handleSync = async () => {
