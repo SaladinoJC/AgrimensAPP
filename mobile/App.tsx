@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, User, Lock, BellRing } from 'lucide-react-native';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { useStore } from './src/store/useStore';
 import { upsertTramites } from './src/db/database';
@@ -41,6 +42,8 @@ export default function App() {
   const { appReady } = useAppBoot();
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
   const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
+
+  SplashScreen.preventAutoHideAsync();
 
   // Lógica puente de Sincronización
   const handleSync = async () => {
@@ -93,7 +96,7 @@ export default function App() {
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
-    if (!appReady) return <LoadingTramitesSpinner />
+    if (!appReady) SplashScreen.hideAsync();
 
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
