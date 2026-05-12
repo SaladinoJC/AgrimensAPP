@@ -1,8 +1,8 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
-import { TramiteDetail } from '../types/tramites-type';
-import { getStatusColor } from '../utils/utils-tramite';
+import { TramiteDetail } from '@/types/tramites-type';
+import { getStatusColor } from '@/utils/utils-tramite';
 
 
   const getHTMLTemplate = (tramite: TramiteDetail) => {

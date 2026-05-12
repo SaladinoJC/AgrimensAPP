@@ -14,11 +14,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useStore } from '../store/useStore';
-import { useBiometric } from '../authLocal/useBiometric';
 import { Lock, Fingerprint, Eye, EyeOff } from 'lucide-react-native';
-import { logoutHeadless, validarCredencialesHeadless } from '../sync/headlessAdapter';
-import { SyncError } from '../sync/types';
+import { useStore } from '@/store/useStore';
+import { useBiometric } from '@/authLocal/useBiometric';
+import { logoutHeadless, validarCredencialesHeadless } from '@/sync/headlessAdapter';
+import { SyncError } from '@/sync/types';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";

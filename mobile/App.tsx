@@ -12,17 +12,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, User, Lock, BellRing } from 'lucide-react-native';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 
-import { useStore } from './src/store/useStore';
-import { upsertTramites } from './src/db/database';
-import { DashboardScreen } from './src/components/DashboardScreen';
-import { CredentialsModal } from './src/components/CredentialsModal';
-import { LoginScreen } from './src/components/LoginScreen';
+import { useStore } from '@/store/useStore';
+import { upsertTramites } from '@/db/database';
+import { DashboardScreen } from '@/components/DashboardScreen';
+import { CredentialsModal } from '@/components/CredentialsModal';
+import { LoginScreen } from '@/components/LoginScreen';
 
-import { useAppBoot } from './src/services/useAppBoot';
-import { useAuthManager } from './src/services/useAuthManager';
-import { useSincronizador } from './src/sync/useSincronizador';
-import { NovedadesModal } from './src/components/ui/NovedadesModal';
-import { NotificacionesScreen } from './src/components/Notificaciones';
+import { useAppBoot } from '@/hooks/useAppBoot';
+import { useAuthManager } from '@/hooks/useAuthManager';
+import { useSincronizador } from '@/hooks/useSincronizador';
+import { NovedadesModal } from '@/components/ui/NovedadesModal';
+import { NotificacionesScreen } from '@/components/Notificaciones';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";

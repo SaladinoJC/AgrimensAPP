@@ -1,4 +1,4 @@
-import { Novedad } from './types';
+import { Novedad } from '@/novedades/types';
 
 export function tieneNovedades(novedades: Novedad[]): boolean {
   return Array.isArray(novedades) && novedades.length > 0;

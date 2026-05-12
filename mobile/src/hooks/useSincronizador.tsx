@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { sincronizarPorFechaHeadless } from './headlessAdapter'; 
-import { CredencialesArba, RangoFechas, SyncError } from './types';
-import { parseTramitesFromPorFechaHtml } from './parserDsisic';
-import { normalizarRango } from './sincronizacion';
-import { ArbaWebView } from './../services/ArbaWebView';
+import { sincronizarPorFechaHeadless } from '@/sync/headlessAdapter';
+import { CredencialesArba, RangoFechas, SyncError } from '@/sync/types';
+import { parseTramitesFromPorFechaHtml } from '@/sync/parserDsisic';
+import { normalizarRango } from '@/sync/sincronizacion';
+import { ArbaWebView } from '@/components/arba/ArbaWebView';
 
 export type SyncResult =
   | { ok: true; rows: any[] }

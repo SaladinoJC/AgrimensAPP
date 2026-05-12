@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { useStore } from '../store/useStore';
+import { useStore } from '@/store/useStore';
 
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";

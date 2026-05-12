@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useStore } from '../store/useStore';
 import { Search, X, Calendar, Trash, ChevronDown } from 'lucide-react-native';
-import { SelectModal } from './ui/SelectModal';
+import { useStore } from '@/store/useStore';
+import { SelectModal } from '@/components/ui/SelectModal';
 
 const C_SURFACE = "#182136";
 const C_CARD = "#1e2a42";

@@ -7,10 +7,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useStore } from '../store/useStore';
-import { LogOut, User, X } from 'lucide-react-native';
-import { useAuthManager } from '../services/useAuthManager';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LogOut, User, X } from 'lucide-react-native';
+import { useAuthManager } from '@/hooks/useAuthManager';
+import { useStore } from '@/store/useStore';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useStore } from '../store/useStore';
-import { getTotalCount } from '../db/database';
-import { SearchFilters } from './SearchFilters';
-import { SyncButton } from './ui/SyncButton';
-import { TramiteList } from './TramiteList';
-import { PaginationControl } from './PaginationControl';
+import { useStore } from '@/store/useStore';
+import { getTotalCount } from '@/db/database';
+import { SearchFilters } from '@/components/SearchFilters';
+import { SyncButton } from '@/components/ui/SyncButton';
+import { TramiteList } from '@/components/TramiteList';
+import { PaginationControl } from '@/components/PaginationControl';
 
 const C_BG = "#0f1724";
 

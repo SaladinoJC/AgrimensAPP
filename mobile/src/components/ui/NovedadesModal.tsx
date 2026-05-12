@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { BellRing } from 'lucide-react-native';
-import { Novedad } from '../../novedades/types';
+import { Novedad } from '@/novedades/types';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";

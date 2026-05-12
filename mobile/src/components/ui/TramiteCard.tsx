@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { Tramite } from '../../types/tramites-type';
-import { getColor } from '../../utils/utils-tramite';
+import { Tramite } from '@/types/tramites-type';
+import { getColor } from '@/utils/utils-tramite';
 
 const C_CARD = "#1e2a42";
 const C_PRIMARY = "#00bfa5";

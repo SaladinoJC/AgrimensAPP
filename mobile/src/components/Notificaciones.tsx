@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Trash2, X, ChevronRight } from 'lucide-react-native';
-import { getNotificaciones, clearNotificaciones, getTramiteByNro } from '../db/database';
-import { TramiteDetail } from '../types/tramites-type';
-import { TramiteDetailModal } from './ui/TramiteDetailModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Trash2, X, ChevronRight } from 'lucide-react-native';
+import { getNotificaciones, clearNotificaciones, getTramiteByNro } from '@/db/database';
+import { TramiteDetail } from '@/types/tramites-type';
+import { TramiteDetailModal } from '@/components/ui/TramiteDetailModal';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";

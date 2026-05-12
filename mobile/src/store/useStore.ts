@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Novedad } from '../novedades/types';
+import { Novedad } from '@/novedades/types';
 
 interface AppState {
   // Autenticación

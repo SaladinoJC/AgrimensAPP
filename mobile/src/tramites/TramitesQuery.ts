@@ -1,4 +1,4 @@
-import { getStats, getTramites } from '../db/database';
+import { getStats, getTramites } from '@/db/database';
 
 export type TramitesFilters = {
   search?: string;

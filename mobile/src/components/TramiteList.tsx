@@ -5,11 +5,11 @@ import {
   FlatList,
   Text,
 } from 'react-native';
-import { useStore } from '../store/useStore';
-import { getTramites } from '../db/database';
-import { TramiteCard } from './ui/TramiteCard';
-import { TramiteDetailModal } from './ui/TramiteDetailModal';
-import { LoadingTramitesSpinner } from './ui/LoadingTramitesSpinner';
+import { useStore } from '@/store/useStore';
+import { getTramites } from '@/db/database';
+import { TramiteCard } from '@/components/ui/TramiteCard';
+import { TramiteDetailModal } from '@/components/ui/TramiteDetailModal';
+import { LoadingTramitesSpinner } from '@/components/ui/LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
 const C_TEXT2 = "#90a4ae";

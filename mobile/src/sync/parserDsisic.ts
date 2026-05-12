@@ -1,4 +1,4 @@
-import { SyncError } from './types';
+import { SyncError } from '@/sync/types';
 
 const JSON_ARRAY_REGEX = /(\[\s*\{.*\}\s*\])/s;
 

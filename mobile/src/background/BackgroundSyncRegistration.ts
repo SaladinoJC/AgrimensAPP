@@ -1,7 +1,7 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
-import { syncArbaHeadless } from './HeadlessSync';
+import { syncArbaHeadless } from '@/background/HeadlessSync';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

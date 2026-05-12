@@ -9,9 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Share2, FileText } from 'lucide-react-native';
-import { TramiteDetail } from '../../types/tramites-type';
-import { handlePrintPDF, handleSharePDF } from '../../tramites/ReportePDF';
-import { getStatusColor } from '../../utils/utils-tramite';
+import { TramiteDetail } from '@/types/tramites-type';
+import { handlePrintPDF, handleSharePDF } from '@/tramites/ReportePDF';
+import { getStatusColor } from '@/utils/utils-tramite';
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";

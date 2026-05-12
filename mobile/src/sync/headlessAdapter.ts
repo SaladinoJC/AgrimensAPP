@@ -1,5 +1,5 @@
-import { CredencialesArba, RangoFechas, SyncError } from './types';
-import { parseTramitesFromPorFechaBuffer } from './parserDsisic';
+import { CredencialesArba, RangoFechas, SyncError } from '@/sync/types';
+import { parseTramitesFromPorFechaBuffer } from '@/sync/parserDsisic';
 
 // FUNCIÓN DE VALIDACIÓN 
 export async function validarCredencialesHeadless(cuit: string, cit: string, signal?: AbortSignal): Promise<void> {

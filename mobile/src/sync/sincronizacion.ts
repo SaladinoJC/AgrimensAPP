@@ -1,4 +1,4 @@
-import { RangoFechas } from './types';
+import { RangoFechas } from '@/sync/types';
 
 function isoDate(d: Date): string {
   return d.toISOString().split('T')[0];

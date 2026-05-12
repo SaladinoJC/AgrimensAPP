@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { RefreshCw, X } from 'lucide-react-native';
-import { useStore } from '../../store/useStore';
+import { useStore } from '@/store/useStore';
 
 const C_PRIMARY = "#00bfa5";
 const C_RED = "#ef5350";

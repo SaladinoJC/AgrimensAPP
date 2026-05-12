@@ -1,10 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
-import { upsertTramites } from '../db/database';
-import { normalizarRango } from '../sync/sincronizacion';
-import { sincronizarPorFechaHeadless } from '../sync/headlessAdapter';
-import { SyncError } from '../sync/types';
-import { tieneNovedades, textoNotificacionAgregada } from '../novedades/policy';
+import { upsertTramites } from '@/db/database';
+import { normalizarRango } from '@/sync/sincronizacion';
+import { sincronizarPorFechaHeadless } from '@/sync/headlessAdapter';
+import { SyncError } from '@/sync/types';
+import { tieneNovedades, textoNotificacionAgregada } from '@/novedades/policy';
 
 export const syncArbaHeadless = async () => {
   try {

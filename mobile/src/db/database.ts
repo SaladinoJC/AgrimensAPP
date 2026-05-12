@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
-import { Novedad } from '../novedades/types';
-import { Tramite, TramiteDetail } from '../types/tramites-type';
+import { Novedad } from '@/novedades/types';
+import { TramiteDetail } from '@/types/tramites-type';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
