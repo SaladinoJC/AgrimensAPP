@@ -6,6 +6,7 @@ export type TramitesFilters = {
   hasta?: string;
   partido?: string;
   partida?: string;
+  estado?: string;
   limit?: number;
   offset?: number;
 };
@@ -18,11 +19,12 @@ export const TramitesQuery = {
       hasta = '',
       partido = '',
       partida = '',
+      estado = '',
       limit = 50,
       offset = 0,
     } = filters;
 
-    return getTramites(search, desde, hasta, partido, partida, limit, offset);
+    return getTramites(search, desde, hasta, partido, partida, estado,limit, offset);
   },
 
   async dashboard() {
