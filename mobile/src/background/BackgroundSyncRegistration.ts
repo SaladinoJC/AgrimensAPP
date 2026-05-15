@@ -15,37 +15,34 @@ Notifications.setNotificationHandler({
 
 export const BACKGROUND_FETCH_TASK = 'background-sync-arba';
 
-let isTaskDefined = false;
 
-const defineBackgroundSyncTask = () => {
-  if (isTaskDefined) return;
-
-  TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-    try {
-      await syncArbaHeadless();
-      return BackgroundTask.BackgroundTaskResult.Success;
-    } catch {
-      return BackgroundTask.BackgroundTaskResult.Failed;
-    }
-  });
-
-  isTaskDefined = true;
-};
-
-// Llama a defineBackgroundSyncTask en el scope global del módulo.
-// Esto es CRÍTICO para que funcione en background real (headless),
-// ya que los useEffect de React no se ejecutan cuando el OS despierta la app.
-defineBackgroundSyncTask();
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
+  try {
+    await syncArbaHeadless();
+    return BackgroundTask.BackgroundTaskResult.Success; 
+  } 
+  catch (error) {
+    console.error("Fallo en la tarea de fondo:", error);
+    return BackgroundTask.BackgroundTaskResult.Failed;
+  }
+});
 
 export const registerBackgroundSync = async (): Promise<void> => {
-
   const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') return;
+  if (status !== 'granted') {
+    console.log("Permisos de notificación denegados.");
+    return;
+  }
 
   const alreadyRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
-  if (alreadyRegistered) return;
+  if (alreadyRegistered) {
+    console.log("La tarea de fondo ya estaba registrada.");
+    return;
+  }
 
   await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    minimumInterval: 60 * 60 * 3, // 3 hours
+    minimumInterval: 60 * 60 * 3, // 3 horas
   });
+  
+  console.log("Tarea de fondo registrada exitosamente.");
 };

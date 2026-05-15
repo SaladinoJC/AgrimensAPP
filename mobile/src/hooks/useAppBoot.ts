@@ -27,6 +27,7 @@ export function useAppBoot() {
         // 3. Registrar tareas en segundo plano
         try {
           await registerBackgroundSync();
+          console.log("Background Sync registrado exitosamente");
         } catch (pushErr) {
           console.log("Error registrando Background Sync", pushErr);
         }

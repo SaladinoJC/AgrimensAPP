@@ -1,3 +1,4 @@
+import '@/background/BackgroundSyncRegistration';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
@@ -21,6 +22,7 @@ import { LoginScreen } from '@/components/LoginScreen';
 import { useAppBoot } from '@/hooks/useAppBoot';
 import { useAuthManager } from '@/hooks/useAuthManager';
 import { useSincronizador } from '@/hooks/useSincronizador';
+import { useNotificacionesPush } from '@/hooks/useNotificationPush';
 import { NovedadesModal } from '@/components/ui/NovedadesModal';
 import { NotificacionesScreen } from '@/components/Notificaciones';
 
@@ -42,6 +44,10 @@ export default function App() {
   const { appReady } = useAppBoot();
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
   const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
+
+  useNotificacionesPush(() => {
+    setShowNotificaciones(true);
+  });
 
   const appState = useRef(AppState.currentState);
   const timestampFondo = useRef<number | null>(null);

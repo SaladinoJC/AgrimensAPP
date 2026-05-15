@@ -24,6 +24,7 @@ export const syncArbaHeadless = async () => {
         content: {
           title,
           body,
+          sound: true,
           data: { novedades },
         },
         trigger: null,
