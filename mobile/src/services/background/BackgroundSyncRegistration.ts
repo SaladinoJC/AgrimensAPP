@@ -1,7 +1,7 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
-import { syncArbaHeadless } from '@/background/HeadlessSync';
+import { syncArbaHeadless } from '@/services/background/HeadlessSync';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -28,21 +28,22 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 });
 
 export const registerBackgroundSync = async (): Promise<void> => {
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') {
+  const status = await BackgroundTask.getStatusAsync();
+  console.log('BackgroundTask status:', status); // ← tiene que ser Available (2)
+
+  const { status: notifStatus } = await Notifications.requestPermissionsAsync();
+  if (notifStatus !== 'granted') {
     console.log("Permisos de notificación denegados.");
     return;
   }
 
   const alreadyRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
-  if (alreadyRegistered) {
-    console.log("La tarea de fondo ya estaba registrada.");
-    return;
-  }
+  console.log('Ya registrada?', alreadyRegistered);
 
-  await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    minimumInterval: 60 * 60 * 3, // 3 horas
-  });
-  
-  console.log("Tarea de fondo registrada exitosamente.");
+  if (!alreadyRegistered) {
+    await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+      minimumInterval: 15, // en minutos
+    });
+    console.log("Tarea registrada.");
+  }
 };

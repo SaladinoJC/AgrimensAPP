@@ -1,4 +1,5 @@
-import '@/background/BackgroundSyncRegistration';
+import '@/services/background/BackgroundSyncRegistration';
+import 'react-native-gesture-handler';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
@@ -12,19 +13,21 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Map, User, Lock, BellRing } from 'lucide-react-native';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useStore } from '@/store/useStore';
 import { upsertTramites } from '@/db/database';
-import { DashboardScreen } from '@/components/DashboardScreen';
+import { DashboardScreen } from '@/screens/DashboardScreen';
 import { CredentialsModal } from '@/components/CredentialsModal';
-import { LoginScreen } from '@/components/LoginScreen';
+import { LoginScreen } from '@/screens/LoginScreen';
 
 import { useAppBoot } from '@/hooks/useAppBoot';
 import { useAuthManager } from '@/hooks/useAuthManager';
 import { useSincronizador } from '@/hooks/useSincronizador';
 import { useNotificacionesPush } from '@/hooks/useNotificationPush';
 import { NovedadesModal } from '@/components/ui/NovedadesModal';
-import { NotificacionesScreen } from '@/components/Notificaciones';
+import { NotificacionesScreen } from '@/screens/NotificacionesScreen';
+import { registerBackgroundSync } from '@/services/background/BackgroundSyncRegistration';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -55,13 +58,19 @@ export default function App() {
   preventAutoHideAsync();
 
   useEffect(() => {
+    if (isLoggedIn) {
+      registerBackgroundSync().catch(console.error);
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
     const subscripcion = AppState.addEventListener('change', (nextAppState) => {
-      
+
       if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
         // La app se minimizó o se bloqueó la pantalla del celular: Empezamos a contar
         timestampFondo.current = Date.now();
-      } 
-      
+      }
+
       else if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         // La app volvió a primer plano: Verificamos cuánto tiempo pasó
         if (timestampFondo.current) {
@@ -215,10 +224,12 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={C_BG} />
-      {renderContent()}
-    </SafeAreaView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={C_BG} />
+        {renderContent()}
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 

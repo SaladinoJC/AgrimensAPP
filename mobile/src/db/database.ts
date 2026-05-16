@@ -242,6 +242,10 @@ export const clearNotificaciones = async () => {
   await dbSegura.execAsync(`DELETE FROM notificaciones;`);
 };
 
+export const deleteNotificacionById = async (id: number) => {
+  const dbSegura = await getDatabase();
+  await dbSegura.runAsync(`DELETE FROM notificaciones WHERE id = ?`, [id]);
+}
 export const getTramiteByNro = async (nroExpediente: string) => {
   const dbSegura = await getDatabase();
   return await dbSegura.getFirstAsync(`SELECT * FROM tramites WHERE nroExpediente = ?`, [nroExpediente]) as TramiteDetail;

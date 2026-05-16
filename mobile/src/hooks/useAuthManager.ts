@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { clearDatabase } from '@/db/database';
 import { useStore } from '@/store/useStore';
-import { autenticarAccesoLocal } from '@/authLocal/authLocal';
+import { autenticarAccesoLocal } from '@/auth/authLocal';
 
 export function useAuthManager() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

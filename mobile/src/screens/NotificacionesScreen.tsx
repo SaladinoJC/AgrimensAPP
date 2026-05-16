@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trash2, X, ChevronRight } from 'lucide-react-native';
-import { getNotificaciones, clearNotificaciones, getTramiteByNro } from '@/db/database';
+import Reanimated, { useAnimatedStyle } from 'react-native-reanimated';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import type { SharedValue } from 'react-native-reanimated';
+import { getNotificaciones, clearNotificaciones, deleteNotificacionById, getTramiteByNro } from '@/db/database';
 import { TramiteDetail } from '@/types/tramites-type';
 import { TramiteDetailModal } from '@/components/ui/TramiteDetailModal';
 
@@ -11,6 +14,21 @@ const C_PRIMARY = "#00bfa5";
 const C_CARD = "#1e2a42";
 const C_TEXT = "#eceff1";
 const C_TEXT2 = "#90a4ae";
+
+// Acción que aparece al deslizar a la izquierda
+function DeleteAction(prog: SharedValue<number>, drag: SharedValue<number>, onDelete: () => void) {
+  const styleAnimation = useAnimatedStyle(() => ({
+    transform: [{ translateX: drag.value + 72 }], // 72 = ancho del botón
+  }));
+
+  return (
+    <Reanimated.View style={[styles.deleteContainer, styleAnimation]}>
+      <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+        <Trash2 color="#fff" size={22} />
+      </TouchableOpacity>
+    </Reanimated.View>
+  );
+}
 
 interface NotificacionesScreenProps {
   visible: boolean;
@@ -39,6 +57,11 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
         }
       }
     ]);
+  };
+
+  const handleDeleteOne = async (id: number) => {
+    await deleteNotificacionById(id);
+    setHistorial(prev => prev.filter(n => n.id !== id));
   };
 
   const onOpenTramite = async (nroExpediente: string) => {
@@ -72,27 +95,36 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
             data={historial}
             keyExtractor={(item) => String(item.id)}
             renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.card} 
-                onPress={() => onOpenTramite(item.nroExpediente)} 
+              <Swipeable
+                friction={2}
+                overshootRight={false}
+                rightThreshold={40}
+                renderRightActions={(prog, drag) =>
+                  DeleteAction(prog, drag, () => handleDeleteOne(item.id))
+                }
               >
-                <View>
-                  <Text style={styles.cardTitle}>Expediente #{item.nroExpediente}</Text>
-                  <Text style={styles.cardSubtitle}>De '{item.viejo_estado}' a '{item.nuevo_estado}'</Text>
-                </View>
-                <ChevronRight color={C_PRIMARY} size={20} />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.card}
+                  onPress={() => onOpenTramite(item.nroExpediente)}
+                >
+                  <View>
+                    <Text style={styles.cardTitle}>Expediente #{item.nroExpediente}</Text>
+                    <Text style={styles.cardSubtitle}>De '{item.viejo_estado}' a '{item.nuevo_estado}'</Text>
+                  </View>
+                  <ChevronRight color={C_PRIMARY} size={20} />
+                </TouchableOpacity>
+              </Swipeable>
             )}
           />
         )}
 
-      {selectedTramite && (
-        <TramiteDetailModal
-          visible={!!selectedTramite} 
-          tramite={selectedTramite}
-          onClose={() => setSelectedTramite(null)} 
-        />
-      )}
+        {selectedTramite && (
+          <TramiteDetailModal
+            visible={!!selectedTramite}
+            tramite={selectedTramite}
+            onClose={() => setSelectedTramite(null)}
+          />
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -106,5 +138,7 @@ const styles = StyleSheet.create({
   emptyText: { color: C_TEXT2, fontSize: 16 },
   card: { flexDirection: 'row', backgroundColor: C_CARD, marginHorizontal: 16, marginTop: 12, padding: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'space-between' },
   cardTitle: { color: C_TEXT, fontWeight: 'bold', fontSize: 16, marginBottom: 4 },
-  cardSubtitle: { color: C_TEXT2, fontSize: 13 }
+  cardSubtitle: { color: C_TEXT2, fontSize: 13 },
+  deleteContainer: { width: 72, marginTop: 12, marginRight: 16, justifyContent: 'center', alignItems: 'center' },
+  deleteButton: { backgroundColor: '#ef5350', width: 56, height: '100%', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
 });

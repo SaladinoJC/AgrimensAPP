@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { initDB } from '@/db/database';
 import { useStore } from '@/store/useStore';
-import { registerBackgroundSync } from '@/background/BackgroundSyncRegistration';
+import { registerBackgroundSync } from '@/services/background/BackgroundSyncRegistration';
 
 export function useAppBoot() {
   const [appReady, setAppReady] = useState(false);

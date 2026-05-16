@@ -67,17 +67,18 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       <View style={styles.content}>
         {/* Lista de tramites */}
         <View style={styles.listContainer}>
-          <TramiteList 
-            key={refreshKey} 
-            isLoading={isLoadingStats} 
+          <TramiteList
+            key={refreshKey}
+            isLoading={isLoadingStats}
           />
         </View>
-        
+
+
         {/* Control de paginación */}
-        <PaginationControl 
-          key={`pag-${refreshKey}`} 
-          totalCount={totalCount} 
-          pageSize={pageSize} 
+        <PaginationControl
+          key={`pag-${refreshKey}`}
+          totalCount={totalCount}
+          pageSize={pageSize}
         />
       </View>
     </View>

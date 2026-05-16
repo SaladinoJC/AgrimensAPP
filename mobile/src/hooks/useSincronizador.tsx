@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { sincronizarPorFechaHeadless } from '@/sync/headlessAdapter';
-import { CredencialesArba, RangoFechas, SyncError } from '@/sync/types';
-import { parseTramitesFromPorFechaHtml } from '@/sync/parserDsisic';
-import { normalizarRango } from '@/sync/sincronizacion';
+import { sincronizarPorFechaHeadless } from '@/services/sync/headlessAdapter';
+import { CredencialesArba, RangoFechas, SyncError } from '@/services/sync/types';
+import { parseTramitesFromPorFechaHtml } from '@/services/sync/parserDsisic';
+import { normalizarRango } from '@/services/sync/sincronizacion';
 import { ArbaWebView } from '@/components/arba/ArbaWebView';
 
 export type SyncResult =
