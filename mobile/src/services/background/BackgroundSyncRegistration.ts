@@ -42,7 +42,7 @@ export const registerBackgroundSync = async (): Promise<void> => {
 
   if (!alreadyRegistered) {
     await BackgroundTask.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-      minimumInterval: 15, // en minutos
+      minimumInterval: 60*3, // en minutos
     });
     console.log("Tarea registrada.");
   }
