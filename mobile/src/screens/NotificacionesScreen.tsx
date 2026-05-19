@@ -8,6 +8,7 @@ import type { SharedValue } from 'react-native-reanimated';
 import { getNotificaciones, clearNotificaciones, deleteNotificacionById, getTramiteByNro } from '@/db/database';
 import { TramiteDetail } from '@/types/tramites-type';
 import { TramiteDetailModal } from '@/components/ui/TramiteDetailModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -51,7 +52,8 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
   const handleClear = () => {
     Alert.alert("Limpiar Notificaciones", "¿Seguro que quieres borrar el historial?", [
       { text: "Cancelar", style: "cancel" },
-      { text: "Borrar Todo", style: "destructive", onPress: async () => {
+      {
+        text: "Borrar Todo", style: "destructive", onPress: async () => {
           await clearNotificaciones();
           setHistorial([]);
         }
@@ -79,60 +81,62 @@ export const NotificacionesScreen = ({ visible, onClose }: NotificacionesScreenP
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}><X color={C_TEXT} size={28} /></TouchableOpacity>
-          <Text style={styles.title}>Centro de Novedades</Text>
-          <TouchableOpacity onPress={handleClear}><Trash2 color="#ef5350" size={24} /></TouchableOpacity>
-        </View>
-
-        {historial.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No tienes notificaciones recientes.</Text>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}><X color={C_TEXT} size={28} /></TouchableOpacity>
+            <Text style={styles.title}>Centro de Novedades</Text>
+            {/* <TouchableOpacity onPress={handleClear}><Trash2 color="#ef5350" size={24} /></TouchableOpacity> */}
           </View>
-        ) : (
-          <FlatList
-            data={historial}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <Swipeable
-                friction={2}
-                overshootRight={false}
-                rightThreshold={40}
-                renderRightActions={(prog, drag) =>
-                  DeleteAction(prog, drag, () => handleDeleteOne(item.id))
-                }
-              >
-                <TouchableOpacity
-                  style={styles.card}
-                  onPress={() => onOpenTramite(item.nroExpediente)}
-                >
-                  <View>
-                    <Text style={styles.cardTitle}>Expediente #{item.nroExpediente}</Text>
-                    <Text style={styles.cardSubtitle}>De '{item.viejo_estado}' a '{item.nuevo_estado}'</Text>
-                  </View>
-                  <ChevronRight color={C_PRIMARY} size={20} />
-                </TouchableOpacity>
-              </Swipeable>
-            )}
-          />
-        )}
 
-        {selectedTramite && (
-          <TramiteDetailModal
-            visible={!!selectedTramite}
-            tramite={selectedTramite}
-            onClose={() => setSelectedTramite(null)}
-          />
-        )}
-      </SafeAreaView>
+          {historial.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No tienes notificaciones recientes.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={historial}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => (
+                <Swipeable
+                  friction={2}
+                  overshootRight={false}
+                  rightThreshold={40}
+                  renderRightActions={(prog, drag) =>
+                    DeleteAction(prog, drag, () => handleDeleteOne(item.id))
+                  }
+                >
+                  <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => onOpenTramite(item.nroExpediente)}
+                  >
+                    <View>
+                      <Text style={styles.cardTitle}>Expediente #{item.nroExpediente}</Text>
+                      <Text style={styles.cardSubtitle}>De '{item.viejo_estado}' a '{item.nuevo_estado}'</Text>
+                    </View>
+                    <ChevronRight color={C_PRIMARY} size={20} />
+                  </TouchableOpacity>
+                </Swipeable>
+              )}
+            />
+          )}
+
+          {selectedTramite && (
+            <TramiteDetailModal
+              visible={!!selectedTramite}
+              tramite={selectedTramite}
+              onClose={() => setSelectedTramite(null)}
+            />
+          )}
+        </SafeAreaView>
+      </GestureHandlerRootView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C_BG },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderBottomColor: C_CARD, alignItems: 'center' },
+  header: { flexDirection: 'row', justifyContent: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: C_CARD, alignItems: 'center' },
   title: { color: C_TEXT, fontSize: 18, fontWeight: 'bold' },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: C_TEXT2, fontSize: 16 },
@@ -141,4 +145,5 @@ const styles = StyleSheet.create({
   cardSubtitle: { color: C_TEXT2, fontSize: 13 },
   deleteContainer: { width: 72, marginTop: 12, marginRight: 16, justifyContent: 'center', alignItems: 'center' },
   deleteButton: { backgroundColor: '#ef5350', width: 56, height: '100%', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  closeButton: { position: 'absolute', left: 20, padding: 8 },
 });

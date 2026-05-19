@@ -8,11 +8,8 @@ const SSO_HOST  = 'https://sso.arba.gov.ar';
 // Limpia todas las cookies de los dominios de ARBA
 async function limpiarCookiesArba(): Promise<void> {
   try {
-    await CookieManager.clearByName(ARBA_HOST, 'JSESSIONID');
-    await CookieManager.clearByName(SSO_HOST, 'JSESSIONID');
-    await CookieManager.clearByName(SSO_HOST, 'TGC');
-    // O nuclear: borra todo
-    // await CookieManager.clearAll();
+    await CookieManager.clearAll();
+    console.log("Cookies de ARBA limpiadas correctamente.");
   } catch (e) {
     console.log('Error limpiando cookies:', e);
   }
@@ -73,14 +70,14 @@ export async function sincronizarPorFechaHeadless(
 
   try {
     await validarCredencialesHeadless(cuit, cit, signal); // ya limpia cookies al inicio
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 300));
     await fetch(`${ARBA_HOST}/DSISIC/asignarRol.do`, {
       method: 'POST',
       body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       signal,
     });
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 300));
     await fetch(`${ARBA_HOST}/DSISIC/jsp/consultas/consultaFechas.jsp?metodo=porFechaPdoPdaJson`, { signal });
 
     const bodyFechas = `opcion=FEC&metodo=porFechaPdoPdaJson&tipoBusqueda=FEC&fechaDesde=${rango.desde}&fechaHasta=${rango.hasta}`;

@@ -1,4 +1,3 @@
-import '@/services/background/BackgroundSyncRegistration';
 import 'react-native-gesture-handler';
 import React, { useState, useEffect, useRef } from 'react';
 import {
