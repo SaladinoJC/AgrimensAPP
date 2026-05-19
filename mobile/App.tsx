@@ -27,7 +27,6 @@ import { useSincronizador } from '@/hooks/useSincronizador';
 import { useNotificacionesPush } from '@/hooks/useNotificationPush';
 import { NovedadesModal } from '@/components/ui/NovedadesModal';
 import { NotificacionesScreen } from '@/screens/NotificacionesScreen';
-import { registerBackgroundSync } from '@/services/background/BackgroundSyncRegistration';
 
 const C_BG = "#0f1724";
 const C_PRIMARY = "#00bfa5";
@@ -57,11 +56,6 @@ export default function App() {
   const TIEMPO_MAXIMO_MINUTOS = 5;
   preventAutoHideAsync();
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      registerBackgroundSync().catch(console.error);
-    }
-  }, [isLoggedIn]);
 
   useEffect(() => {
     const subscripcion = AppState.addEventListener('change', (nextAppState) => {
