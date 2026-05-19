@@ -1,10 +1,20 @@
 import * as SQLite from 'expo-sqlite';
-import { Novedad } from '../novedades/types';
+import { Novedad } from '@/novedades/types';
+import { TramiteDetail } from '@/types/tramites-type';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-export const initDB = async () => {
+//Singleton para obtener la instancia de la base de datos. Asegura que solo se abra una conexión.
+export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
+  if (db !== null) {
+    return db;
+  }
   db = await SQLite.openDatabaseAsync('tramites.db');
+  return db;
+};
+
+export const initDB = async () => {
+  const db = await getDatabase();
   
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS tramites (
@@ -22,11 +32,20 @@ export const initDB = async () => {
         demora TEXT, 
         final_estimada TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS notificaciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nroExpediente TEXT,
+        viejo_estado TEXT,
+        nuevo_estado TEXT,
+        fecha TEXT,
+        leida INTEGER DEFAULT 0
+    );
   `);
 };
 
 export const upsertTramites = async (rows: any[]) => {
-  if (!db) return [];
+  const db = await getDatabase();
   
   const novedades: Novedad[] = [];
   const stmt = await db.prepareAsync(`
@@ -97,6 +116,19 @@ export const upsertTramites = async (rows: any[]) => {
         final_est
       ]);
     }
+
+    if (novedades.length > 0) {
+      const stmtNotif = await db.prepareAsync(`
+        INSERT INTO notificaciones (nroExpediente, viejo_estado, nuevo_estado, fecha) 
+        VALUES (?, ?, ?, ?)
+      `);
+      const fechaNow = new Date().toISOString();
+      for (const nov of novedades) {
+        await stmtNotif.executeAsync([nov.nro, nov.viejo, nov.nuevo, fechaNow]);
+      }
+      await stmtNotif.finalizeAsync();
+    }
+
     await db.execAsync('COMMIT');
   } catch(e) {
     await db.execAsync('ROLLBACK');
@@ -108,15 +140,19 @@ export const upsertTramites = async (rows: any[]) => {
   return novedades;
 };
 
+
 export const getTramites = async (
   search: string = "", 
   desde: string = "", 
   hasta: string = "", 
   partido: string = "", 
-  partida: string = "", 
+  partida: string = "",
+  estado: string = "",
   limit: number = 50, 
   offset: number = 0
 ) => {
+  const db = await getDatabase();
+
   if (!db) return [];
   
   let q = "SELECT * FROM tramites WHERE 1=1";
@@ -126,7 +162,7 @@ export const getTramites = async (
   if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
   if (partido) { q += " AND partido = ?"; params.push(partido); }
   if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
-
+  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
   if (search) {
     const s = `%${search}%`;
     q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
@@ -139,8 +175,9 @@ export const getTramites = async (
   return await db.getAllAsync(q, params);
 };
 
+
 export const getStats = async () => {
-  if (!db) return { total: 0, en_curso: 0, finalizados: 0, rechazados: 0 };
+  const db = await getDatabase();
   
   const total = await db.getFirstAsync<{count: number}>('SELECT COUNT(*) as count FROM tramites');
   const finalizados = await db.getFirstAsync<{count: number}>("SELECT COUNT(*) as count FROM tramites WHERE UPPER(estado) LIKE '%FINALIZADO%' OR UPPER(estado) LIKE '%ENTREGADO%'");
@@ -153,4 +190,63 @@ export const getStats = async () => {
     finalizados: finalizados?.count || 0,
     rechazados: rechazados?.count || 0,
   };
+};
+
+export const getTotalCount = async (
+  search: string = "", 
+  desde: string = "", 
+  hasta: string = "", 
+  partido: string = "", 
+  partida: string = "",
+  estado: string = ""
+): Promise<number> => {
+  const db = await getDatabase();
+  if (!db) return 0;
+  
+  let q = "SELECT COUNT(*) as count FROM tramites WHERE 1=1";
+  const params: any[] = [];
+  
+  if (desde) { q += " AND fecha_alta >= ?"; params.push(desde); }
+  if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
+  if (partido) { q += " AND partido = ?"; params.push(partido); }
+  if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
+  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
+  if (search) {
+    const s = `%${search}%`;
+    q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
+    params.push(s, s, s, s, s, s, s);
+  }
+  
+  const result = await db.getFirstAsync<{count: number}>(q, params);
+  return result?.count || 0;
+};
+
+export const clearDatabase = async () => {
+  try {
+    const db = await getDatabase();
+    await db.execAsync(`DELETE FROM tramites;`);
+    console.log("Base de datos local limpiada correctamente tras el cierre de sesión.");
+  } catch (error) {
+    console.error("Error al limpiar la base de datos:", error);
+    throw error;
+  }
+};
+
+export const getNotificaciones = async () => {
+  const dbSegura = await getDatabase();
+  return await dbSegura.getAllAsync(`SELECT * FROM notificaciones ORDER BY fecha DESC`);
+};
+
+export const clearNotificaciones = async () => {
+  const dbSegura = await getDatabase();
+  await dbSegura.execAsync(`DELETE FROM notificaciones;`);
+};
+
+export const deleteNotificacionById = async (id: number) => {
+  const dbSegura = await getDatabase();
+  await dbSegura.runAsync(`DELETE FROM notificaciones WHERE id = ?`, [id]);
+}
+export const getTramiteByNro = async (nroExpediente: string) => {
+  const dbSegura = await getDatabase();
+  return await dbSegura.getFirstAsync(`SELECT * FROM tramites WHERE nroExpediente = ?`, [nroExpediente]) as TramiteDetail;
 };

@@ -24,10 +24,10 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT",
         "RECEIVE_BOOT_COMPLETED",
         "WAKE_LOCK",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
         "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT",
         "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -40,15 +40,15 @@
     "plugins": [
       "expo-secure-store",
       "expo-local-authentication",
-      "expo-background-fetch",
       "expo-task-manager",
       "expo-notifications",
       "@react-native-community/datetimepicker",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-background-task"
     ],
     "extra": {
       "eas": {
-        "projectId": "e2740ba4-5803-451c-8561-e32441cc8ec6"
+        "projectId": "9097d875-3173-41d5-9339-fed65c3393c7"
       }
     }
   }

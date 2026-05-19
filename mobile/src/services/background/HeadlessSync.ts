@@ -1,9 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
-import { upsertTramites } from '../db/database';
-import { normalizarRango, sincronizarPorFecha } from '../sync/sincronizacion';
-import { SyncError } from '../sync/types';
-import { tieneNovedades, textoNotificacionAgregada } from '../novedades/policy';
+import { upsertTramites } from '@/db/database';
+import { normalizarRango } from '@/services/sync/sincronizacion';
+import { sincronizarPorFechaHeadless } from '@/services/sync/headlessAdapter';
+import { SyncError } from '@/services/sync/types';
+import { tieneNovedades, textoNotificacionAgregada } from '@/novedades/policy';
 
 export const syncArbaHeadless = async () => {
   try {
@@ -12,12 +13,10 @@ export const syncArbaHeadless = async () => {
     if (!cuit || !cit) return;
 
     const rango = normalizarRango();
-    const result = await sincronizarPorFecha({ cuit, cit }, rango);
-    if (!result.ok) {
-      throw result.error;
-    }
 
-    const novedades = await upsertTramites(result.rows);
+    const result = await sincronizarPorFechaHeadless({ cuit, cit }, rango);
+
+    const novedades = await upsertTramites(result);
 
     if (tieneNovedades(novedades)) {
       const { title, body } = textoNotificacionAgregada(novedades);
@@ -25,11 +24,13 @@ export const syncArbaHeadless = async () => {
         content: {
           title,
           body,
+          sound: true,
           data: { novedades },
         },
         trigger: null,
       });
     }
+   
   } catch (e) {
     const msg = e instanceof SyncError ? `${e.kind}: ${e.message}` : String(e);
     console.log("Background sync error:", msg);
