@@ -174,9 +174,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: C_CARD,
     borderRadius: 12,
-    padding: 12,
+    padding: 8,
     marginHorizontal: 12,
-    marginVertical: 8,
+    marginVertical: 4,
   },
   searchBar: {
     flexDirection: 'row',

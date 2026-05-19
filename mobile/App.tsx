@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C_BG },
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: C_BG },
   loadingBg: { flex: 1, backgroundColor: C_BG, justifyContent: 'center', alignItems: 'center' },
-  appBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, backgroundColor: C_BG, alignItems: 'center', borderBottomColor: '#182136', borderBottomWidth: 1 },
+  appBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, paddingBottom: 4,backgroundColor: C_BG, alignItems: 'center', borderBottomColor: '#182136', borderBottomWidth: 1 },
   appBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   appBarTitle: { color: C_TEXT, fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
   profileButton: { padding: 8 },
