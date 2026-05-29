@@ -9,13 +9,11 @@ export class SyncError extends Error {
   }
 }
 
-export type RangoFechas = {
-  desde: string; // YYYY-MM-DD
-  hasta: string; // YYYY-MM-DD
-};
-
-export type CredencialesArba = {
-  cuit: string;
-  cit: string;
-};
-
+export interface ArchivoArba {
+  numeroTramite: number;
+  secuencia: number;
+  tipo: number;
+  extension: string;
+  descripcion: string;
+  carpeta: string;
+}

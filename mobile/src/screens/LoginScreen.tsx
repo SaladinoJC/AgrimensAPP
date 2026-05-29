@@ -38,7 +38,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showBiometricButton, setShowBiometricButton] = useState(false);
 
-  const { setCuit: storeCuit, setCit: storeCit, setIsLoggedIn } = useStore();
+  const setCredenciales = useStore((state) => state.setCredenciales);
+  const setIsLoggedIn = useStore((state) => state.setIsLoggedIn);
+
   const { checkBiometricAvailability, authenticate, isLoading: bioLoading } = useBiometric();
 
   useEffect(() => {
@@ -55,8 +57,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         const savedCit = await SecureStore.getItemAsync('cit');
         
         if (savedCuit && savedCit) {
-          storeCuit(savedCuit);
-          storeCit(savedCit);
+          setCredenciales({ cuit: savedCuit, cit: savedCit });
           setIsLoggedIn(true);
           await AsyncStorage.setItem('isLoggedIn', 'true');
           onLoginSuccess();
@@ -81,27 +82,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
 
     setIsLoading(true);
-    try {
-      // await validarCredencialesHeadless(cuitLimpio, citLimpio);
-      // await logoutHeadless();
-      
+    try {      
       await SecureStore.setItemAsync('cuit', cuitLimpio);
       await SecureStore.setItemAsync('cit', citLimpio);
       await AsyncStorage.setItem('isLoggedIn', 'true');
       
-      storeCuit(cuitLimpio);
-      storeCit(citLimpio);
+      setCredenciales({ cuit: cuitLimpio, cit: citLimpio });
       setIsLoggedIn(true);
       
       onLoginSuccess();
-
-    } catch (error) {
+    } 
+    catch (error) {
       if (error instanceof SyncError) {
         Alert.alert('Acceso Denegado', error.message);
       } else {
         Alert.alert('Error de Conexión', 'No se pudo verificar la identidad con ARBA. Intente nuevamente.');
       }
-    } finally {
+    } 
+    finally {
       setIsLoading(false);
     }
   };

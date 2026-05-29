@@ -18,16 +18,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onSync,
   onSyncCancel,
 }) => {
-  const {
-    pageSize,
-    searchQuery,
-    filterDesde,
-    filterHasta,
-    filterPartido,
-    filterPartida,
-    filterEstado,
-    refreshKey,
-  } = useStore();
+  const { filtros, paginacion, refreshKey } = useStore();
 
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
@@ -36,12 +27,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     setIsLoadingStats(true);
     try {
       const count = await getTotalCount(
-        searchQuery,
-        filterDesde,
-        filterHasta,
-        filterPartido,
-        filterPartida,
-        filterEstado
+        filtros.query,
+        filtros.fecha.desde,
+        filtros.fecha.hasta,
+        filtros.partido,
+        filtros.partida,
+        filtros.estado,
+        filtros.tipo_tramite,
       );
       setTotalCount(count);
     } catch (error) {
@@ -54,7 +46,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   // recalcular si los filtros globales del store cambian.
   useEffect(() => {
     loadStats();
-  }, [searchQuery, filterDesde, filterHasta, filterPartido, filterPartida, filterEstado, refreshKey]);
+  }, [filtros, refreshKey]);
 
   return (
     <View style={styles.container}>
@@ -73,12 +65,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           />
         </View>
 
-
         {/* Control de paginación */}
         <PaginationControl
           key={`pag-${refreshKey}`}
           totalCount={totalCount}
-          pageSize={pageSize}
+          pageSize={paginacion.size}
         />
       </View>
     </View>

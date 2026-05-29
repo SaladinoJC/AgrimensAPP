@@ -1,37 +1,19 @@
-import { useCallback } from 'react';
+import { useStore } from "@/store/useStore";
 
-export const usePagination = (pageSize: number) => {
-  const calculateTotalPages = useCallback(
-    (totalCount: number) => {
-      return Math.ceil(totalCount / pageSize);
-    },
-    [pageSize]
+export const usePaginationInfo = (totalCount: number) => {
+  const { page: currentPage, size: pageSize } = useStore(
+    (state) => state.paginacion,
   );
 
-  const calculateOffset = useCallback(
-    (currentPage: number) => {
-      return (currentPage - 1) * pageSize;
-    },
-    [pageSize]
-  );
-
-  const getPageInfo = useCallback(
-    (currentPage: number, totalCount: number) => {
-      const totalPages = calculateTotalPages(totalCount);
-      return {
-        currentPage,
-        totalPages,
-        hasNextPage: currentPage < totalPages,
-        hasPrevPage: currentPage > 1,
-        offset: calculateOffset(currentPage),
-      };
-    },
-    [calculateTotalPages, calculateOffset]
-  );
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const offset = (currentPage - 1) * pageSize;
 
   return {
-    calculateTotalPages,
-    calculateOffset,
-    getPageInfo,
+    currentPage,
+    totalPages,
+    pageSize,
+    offset,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1,
   };
 };

@@ -23,7 +23,6 @@ import { LoginScreen } from '@/screens/LoginScreen';
 import { useAppBoot } from '@/hooks/useAppBoot';
 import { useAuthManager } from '@/hooks/useAuthManager';
 import { useSincronizador } from '@/hooks/useSincronizador';
-import { useNotificacionesPush } from '@/hooks/useNotificationPush';
 import { NovedadesModal } from '@/components/ui/NovedadesModal';
 import { NotificacionesScreen } from '@/screens/NotificacionesScreen';
 
@@ -44,17 +43,17 @@ export default function App() {
 
   const { appReady } = useAppBoot();
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
-  const { sync, cancelSync, SincronizadorComponent } = useSincronizador();
-
-  useNotificacionesPush(() => {
-    setShowNotificaciones(true);
-  });
+  const { sync, cancelSync, sincronizadorElement } = useSincronizador();
 
   const appState = useRef(AppState.currentState);
   const timestampFondo = useRef<number | null>(null);
   const TIEMPO_MAXIMO_MINUTOS = 5;
-  preventAutoHideAsync();
 
+  useEffect(() => {
+    if (appReady) {
+      hideAsync().catch(console.warn);
+    }
+  }, [appReady]);
 
   useEffect(() => {
     const subscripcion = AppState.addEventListener('change', (nextAppState) => {
@@ -88,10 +87,10 @@ export default function App() {
   const handleSync = async () => {
     const freshState = useStore.getState();
 
-    if (freshState.isSyncing || !freshState.cuit || !freshState.cit) return;
+    if (freshState.isSyncing || !freshState.credenciales.cuit || !freshState.credenciales.cit) return;
     setIsSyncing(true);
 
-    const result = await sync({ cuit: freshState.cuit, cit: freshState.cit });
+    const result = await sync({ cuit: freshState.credenciales.cuit, cit: freshState.credenciales.cit });
 
     if (!result.ok) {
       if (result.error?.message.includes("Credenciales") || result.error?.message.includes("sesión expirada")) {
@@ -135,11 +134,10 @@ export default function App() {
   // Lógica principal de Renderizado
   const renderContent = () => {
     // 1. Mostrar spinner mientras la BD y SecureStore cargan
-    if (!appReady) return;
+    if (!appReady) return null;
 
     // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
-      hideAsync();
       return (
         <LoginScreen
           onLoginSuccess={() => {
@@ -153,7 +151,6 @@ export default function App() {
 
     // 3. Si SÍ hay sesión, pero aún no se ha autenticado con PIN/Huella
     if (!isAuthenticated) {
-      hideAsync();
       return (
         <View style={[styles.loadingBg, { padding: 20 }]}>
           <Lock color={C_PRIMARY} size={64} style={{ marginBottom: 20 }} />
@@ -197,7 +194,7 @@ export default function App() {
           onClose={() => setShowProfileModal(false)}
         />
 
-        {SincronizadorComponent}
+        {sincronizadorElement}
 
         <NovedadesModal
           novedades={novedades}

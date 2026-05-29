@@ -16,7 +16,8 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
   totalCount,
   pageSize,
 }) => {
-  const { currentPage, setCurrentPage } = useStore();
+  const currentPage = useStore((state) => state.paginacion.page);
+  const setPaginacion = useStore((state) => state.setPaginacion);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   
@@ -25,13 +26,13 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
 
   const handlePrevious = () => {
     if (hasPrevPage) {
-      setCurrentPage(currentPage - 1);
+      setPaginacion("page", currentPage - 1);
     }
   };
 
   const handleNext = () => {
     if (hasNextPage) {
-      setCurrentPage(currentPage + 1);
+      setPaginacion("page", currentPage + 1);
     }
   };
 

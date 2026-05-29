@@ -1,6 +1,7 @@
-import CookieManager from '@react-native-cookies/cookies';
-import { CredencialesArba, RangoFechas, SyncError } from '@/services/sync/types';
+// import CookieManager from '@react-native-cookies/cookies';
+import { SyncError } from '@/services/sync/types';
 import { parseTramitesFromPorFechaBuffer } from '@/services/sync/parserDsisic';
+import { CredencialesArba, RangoFechas } from '@/store/store.types';
 
 const ARBA_HOST = 'https://www16.arba.gov.ar';
 const SSO_HOST  = 'https://sso.arba.gov.ar';
@@ -8,7 +9,7 @@ const SSO_HOST  = 'https://sso.arba.gov.ar';
 // Limpia todas las cookies de los dominios de ARBA
 async function limpiarCookiesArba(): Promise<void> {
   try {
-    await CookieManager.clearAll();
+    // await CookieManager.clearAll();
     console.log("Cookies de ARBA limpiadas correctamente.");
   } catch (e) {
     console.log('Error limpiando cookies:', e);

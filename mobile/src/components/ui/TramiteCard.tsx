@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { Tramite } from '@/types/tramites-type';
+import { Tramite } from '@/tramites/tramites-type';
 import { getColor } from '@/utils/utils-tramite';
 
 const C_CARD = "#1e2a42";
