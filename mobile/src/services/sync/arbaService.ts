@@ -10,6 +10,13 @@ export async function obtenerDetallesDelTramite(
     // 1. Iniciamos sesión silenciosamente para obtener las cookies nativas
     await validarCredencialesHeadless(cuit, cit);
 
+    await new Promise((r) => setTimeout(r, 300));
+    await fetch(`https://www16.arba.gov.ar/DSISIC/asignarRol.do`, {
+      method: "POST",
+      body: `metodo=asignarRol&usuario=${cuit}&rol=UsuarioExterno`,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+
     // 2. Hacemos la petición
     const url = `https://www16.arba.gov.ar/DSISIC/PorTramiteJson.do?metodo=detalleporNroTramiteJson&nroTramite=${nroExpediente}&usuarioConsulta=E`;
     const response = await fetch(url, {
