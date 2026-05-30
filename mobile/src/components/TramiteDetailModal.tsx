@@ -210,7 +210,7 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
 };
 
 // ==========================================
-// SUB-COMPONENTES LOCALES (LIMPIEZA DE CÓDIGO)
+// SUB-COMPONENTES LOCALES
 // ==========================================
 
 const BasicInfoCards = ({ tramite }: { tramite: TramiteDetail }) => (
@@ -245,9 +245,7 @@ const DetailRow = ({ label, value }: { label: string; value?: string }) => (
   </View>
 );
 
-// ==========================================
-// ESTILOS (IGUALES A TU VERSIÓN ANTERIOR)
-// ==========================================
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C_BG },
   header: {
