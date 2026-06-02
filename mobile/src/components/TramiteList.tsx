@@ -8,7 +8,7 @@ import {
 import { useStore } from '@/store/useStore';
 import { getTramites } from '@/db/database';
 import { TramiteCard } from '@/components/ui/TramiteCard';
-import { TramiteDetailModal } from '@/components/ui/TramiteDetailModal';
+import { TramiteDetailModal } from '@/components/TramiteDetailModal';
 import { LoadingTramitesSpinner } from '@/components/ui/LoadingTramitesSpinner';
 
 const C_BG = "#0f1724";
@@ -19,20 +19,13 @@ interface TramiteListProps {
 }
 
 export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) => {
-  const {
-    searchQuery,
-    filterDesde,
-    filterHasta,
-    filterPartido,
-    filterPartida,
-    filterEstado,
-    currentPage,
-    pageSize,
-    isSyncing,
-  } = useStore();
+  const filtros = useStore((state) => state.filtros);
+  const paginacion = useStore((state) => state.paginacion);
+  const setPaginacion = useStore((state) => state.setPaginacion);
+  const isSyncing = useStore((state) => state.isSyncing);
 
   const [tramites, setTramites] = useState<any>([]);
-  const [isLoadingData, setIsLoadingData] = useState(true); 
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [selectedTramite, setSelectedTramite] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -40,28 +33,33 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
 
   useEffect(() => {
     loadTramites();
-  }, [currentPage, searchQuery, filterDesde, filterHasta, filterPartido, filterPartida, filterEstado]);
+  }, [filtros, paginacion.page, paginacion.size]);
+
+  useEffect(() => {
+    setPaginacion("page", 1);
+  }, [filtros]);
 
   useEffect(() => {
     if (tramites.length > 0) {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
-  }, [currentPage]);
+  }, [filtros, paginacion.page]);
 
   const loadTramites = async () => {
     setIsLoadingData(true);
     try {
-      const offset = (currentPage - 1) * pageSize;
+      const offset = (paginacion.page - 1) * paginacion.size;
 
       const data = await getTramites(
-        searchQuery,
-        filterDesde,
-        filterHasta,
-        filterPartido,
-        filterPartida,
-        filterEstado,
-        pageSize,
-        offset
+        filtros.query,
+        filtros.fecha.desde,
+        filtros.fecha.hasta,
+        filtros.partido,
+        filtros.partida,
+        filtros.estado,
+        filtros.tipo_tramite,
+        paginacion.size,
+        offset,
       );
 
       setTramites(data);
@@ -77,12 +75,15 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
     setModalVisible(true);
   }, []);
 
-  const renderTramite = useCallback(({ item }: { item: any }) => (
-    <TramiteCard tramite={item} onPress={() => handleTramitePress(item)} />
-  ), [handleTramitePress]);
+  const renderTramite = useCallback(
+    ({ item }: { item: any }) => (
+      <TramiteCard tramite={item} onPress={() => handleTramitePress(item)} />
+    ),
+    [handleTramitePress],
+  );
 
 
-  if (isLoadingData || isSyncing) {
+  if (isLoading || isLoadingData || isSyncing) {
     return <LoadingTramitesSpinner />;
   }
 

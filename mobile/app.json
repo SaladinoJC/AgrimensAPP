@@ -2,7 +2,7 @@
   "expo": {
     "name": "AgrimensAPP",
     "slug": "agrimensapp",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -19,6 +19,7 @@
       "package": "com.agrimensapp.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
+        "resizeMode": "contain",
         "backgroundColor": "#0f1724"
       },
       "edgeToEdgeEnabled": true,
@@ -40,11 +41,9 @@
     "plugins": [
       "expo-secure-store",
       "expo-local-authentication",
-      "expo-task-manager",
       "expo-notifications",
       "@react-native-community/datetimepicker",
-      "expo-sqlite",
-      "expo-background-task"
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {

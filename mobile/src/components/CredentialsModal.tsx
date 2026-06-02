@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -6,11 +6,11 @@ import {
   Modal,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LogOut, User, X } from 'lucide-react-native';
-import { useAuthManager } from '@/hooks/useAuthManager';
-import { useStore } from '@/store/useStore';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LogOut, User, X } from "lucide-react-native";
+import { useAuthManager } from "@/hooks/useAuthManager";
+import { useStore } from "@/store/useStore";
 
 const C_BG = "#0f1724";
 const C_SURFACE = "#182136";
@@ -30,36 +30,43 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
   visible,
   onClose,
 }) => {
-  const { cuit } = useStore();
+  const cuit = useStore((state) => state.credenciales.cuit);
   const { handleLogout: logout } = useAuthManager();
 
   const handleLogout = () => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro de que deseas cerrar la sesión?',
+      "Cerrar Sesión",
+      "¿Estás seguro de que deseas cerrar la sesión?",
       [
-        { 
-          text: 'Cancelar', 
-          onPress: () => {}, 
-          style: 'cancel' 
+        {
+          text: "Cancelar",
+          onPress: () => {},
+          style: "cancel",
         },
         {
-          text: 'Cerrar Sesión',
-          style: 'destructive', 
-          onPress: () => {logout();onClose()}
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: () => {
+            logout();
+            onClose();
           },
+        },
       ],
-    )}
-  
-  
+    );
+  };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={false}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mi Perfil</Text>
-          <TouchableOpacity 
-            onPress={onClose} 
+          <TouchableOpacity
+            onPress={onClose}
             activeOpacity={0.7}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
@@ -102,7 +109,7 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         </TouchableOpacity>
       </SafeAreaView>
     </Modal>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
@@ -111,9 +118,9 @@ const styles = StyleSheet.create({
     backgroundColor: C_BG,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomColor: C_CARD,
@@ -121,7 +128,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: C_TEXT,
   },
   content: {
@@ -132,7 +139,7 @@ const styles = StyleSheet.create({
     backgroundColor: C_CARD,
     borderRadius: 12,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
     borderTopColor: C_PRIMARY,
     borderTopWidth: 3,
@@ -142,19 +149,19 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: C_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   cuitLabel: {
     fontSize: 12,
     color: C_TEXT2,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 8,
   },
   cuitValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: C_PRIMARY,
     marginTop: 4,
     marginBottom: 12,
@@ -162,8 +169,8 @@ const styles = StyleSheet.create({
   credentialNote: {
     fontSize: 12,
     color: C_TEXT2,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontStyle: "italic",
   },
   infoCard: {
     backgroundColor: C_CARD,
@@ -172,13 +179,13 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: C_TEXT,
     marginBottom: 12,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 8,
     borderBottomColor: C_SURFACE,
     borderBottomWidth: 1,
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 13,
     color: C_PRIMARY,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   logoutButton: {
     backgroundColor: C_RED,
@@ -198,13 +205,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoutButtonText: {
     color: C_WHITE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 8,
     fontSize: 16,
   },

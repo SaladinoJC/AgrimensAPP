@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Novedad } from '@/novedades/types';
-import { TramiteDetail } from '@/types/tramites-type';
+import { TramiteDetail } from '@/tramites/tramites.type';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
@@ -142,82 +142,112 @@ export const upsertTramites = async (rows: any[]) => {
 
 
 export const getTramites = async (
-  search: string = "", 
-  desde: string = "", 
-  hasta: string = "", 
-  partido: string = "", 
+  search: string = "",
+  desde: string = "",
+  hasta: string = "",
+  partido: string = "",
   partida: string = "",
   estado: string = "",
-  limit: number = 50, 
-  offset: number = 0
+  tipo_tramite: string = "",
+  limit: number = 50,
+  offset: number = 0,
 ) => {
   const db = await getDatabase();
-
   if (!db) return [];
-  
+
   let q = "SELECT * FROM tramites WHERE 1=1";
   const params: any[] = [];
-  
-  if (desde) { q += " AND fecha_alta >= ?"; params.push(desde); }
-  if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
-  if (partido) { q += " AND partido = ?"; params.push(partido); }
-  if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
-  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
+
+  // SOLUCIÓN FECHAS: Inyectamos horas límite
+  if (desde) {
+    q += " AND SUBSTR(fecha_alta, 1, 10) >= ?";
+    params.push(desde);
+  }
+  if (hasta) {
+    q += " AND SUBSTR(fecha_alta, 1, 10) <= ?";
+    params.push(hasta);
+  }
+
+  if (partido) {
+    q += " AND partido = ?";
+    params.push(partido);
+  }
+  if (partida) {
+    q += " AND partida LIKE ?";
+    params.push(`%${partida}%`);
+  }
+  if (estado) {
+    q += " AND UPPER(estado) LIKE ?";
+    params.push(`%${estado.toUpperCase()}%`);
+  }
+  if (tipo_tramite) {
+    q += " AND tipo_tramite LIKE ?";
+    params.push(`%${tipo_tramite}%`);
+  }
+
   if (search) {
     const s = `%${search}%`;
-    q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
+    q +=
+      " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
     params.push(s, s, s, s, s, s, s);
   }
-  
-  q += " ORDER BY fecha_alta DESC LIMIT ? OFFSET ?";
+
+  q += " ORDER BY fecha_alta DESC, fecha_movimiento DESC LIMIT ? OFFSET ?";
   params.push(limit, offset);
-  
+
   return await db.getAllAsync(q, params);
 };
 
-
-export const getStats = async () => {
-  const db = await getDatabase();
-  
-  const total = await db.getFirstAsync<{count: number}>('SELECT COUNT(*) as count FROM tramites');
-  const finalizados = await db.getFirstAsync<{count: number}>("SELECT COUNT(*) as count FROM tramites WHERE UPPER(estado) LIKE '%FINALIZADO%' OR UPPER(estado) LIKE '%ENTREGADO%'");
-  const rechazados = await db.getFirstAsync<{count: number}>("SELECT COUNT(*) as count FROM tramites WHERE UPPER(estado) LIKE '%RECHAZADO%'");
-  const en_curso = await db.getFirstAsync<{count: number}>("SELECT COUNT(*) as count FROM tramites WHERE UPPER(estado) LIKE '%EN CURSO%' OR UPPER(estado) LIKE '%EN TRAMITE%' OR UPPER(estado) LIKE '%PENDIENTE%'");
-  
-  return {
-    total: total?.count || 0,
-    en_curso: en_curso?.count || 0,
-    finalizados: finalizados?.count || 0,
-    rechazados: rechazados?.count || 0,
-  };
-};
-
 export const getTotalCount = async (
-  search: string = "", 
-  desde: string = "", 
-  hasta: string = "", 
-  partido: string = "", 
+  search: string = "",
+  desde: string = "",
+  hasta: string = "",
+  partido: string = "",
   partida: string = "",
-  estado: string = ""
+  estado: string = "",
+  tipo_tramite: string = "",
 ): Promise<number> => {
   const db = await getDatabase();
   if (!db) return 0;
-  
+
   let q = "SELECT COUNT(*) as count FROM tramites WHERE 1=1";
   const params: any[] = [];
-  
-  if (desde) { q += " AND fecha_alta >= ?"; params.push(desde); }
-  if (hasta) { q += " AND fecha_alta <= ?"; params.push(hasta); }
-  if (partido) { q += " AND partido = ?"; params.push(partido); }
-  if (partida) { q += " AND partida LIKE ?"; params.push(`%${partida}%`); }
-  if (estado) { q += " AND UPPER(estado) LIKE ?"; params.push(`%${estado.toUpperCase()}%`); }
+
+  // SOLUCIÓN FECHAS: Inyectamos horas límite
+  if (desde) {
+    q += " AND SUBSTR(fecha_alta, 1, 10) >= ?";
+    params.push(desde);
+  }
+  if (hasta) {
+    q += " AND SUBSTR(fecha_alta, 1, 10) <= ?";
+    params.push(hasta);
+  }
+
+  if (partido) {
+    q += " AND partido = ?";
+    params.push(partido);
+  }
+  if (partida) {
+    q += " AND partida LIKE ?";
+    params.push(`%${partida}%`);
+  }
+  if (estado) {
+    q += " AND UPPER(estado) LIKE ?";
+    params.push(`%${estado.toUpperCase()}%`);
+  }
+  if (tipo_tramite) {
+    q += " AND tipo_tramite LIKE ?";
+    params.push(`%${tipo_tramite}%`);
+  }
+
   if (search) {
     const s = `%${search}%`;
-    q += " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
+    q +=
+      " AND (nroExpediente LIKE ? OR partido LIKE ? OR partida LIKE ? OR nomenclatura LIKE ? OR tipo_tramite LIKE ? OR estado LIKE ? OR oblea LIKE ?)";
     params.push(s, s, s, s, s, s, s);
   }
-  
-  const result = await db.getFirstAsync<{count: number}>(q, params);
+
+  const result = await db.getFirstAsync<{ count: number }>(q, params);
   return result?.count || 0;
 };
 
