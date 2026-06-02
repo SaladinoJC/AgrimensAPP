@@ -1,117 +1,103 @@
-import { create } from 'zustand';
-import { Novedad } from '@/novedades/types';
+import { create } from "zustand";
+import { Novedad } from "@/novedades/types";
+import {
+  CredencialesArba,
+  defaultFiltros,
+  defaultPaginacion,
+  FiltrosBusqueda,
+  Paginacion,
+  RangoFechas,
+} from "@/store/store.types";
 
 interface AppState {
   // Autenticación
-  cuit: string;
-  cit: string;
+  credenciales: CredencialesArba;
+  // Búsqueda y filtros
+  filtros: FiltrosBusqueda;
+  // Paginación
+  paginacion: Paginacion;
+  // Novedades
+  novedades: Novedad[];
   isLoggedIn: boolean;
-  
   // Sincronización
   isSyncing: boolean;
-  
-  // Búsqueda y filtros
-  searchQuery: string;
-  filterDesde: string;
-  filterHasta: string;
-  filterPartido: string;
-  filterPartida: string;
-  filterEstado: string;
-  
-  // Paginación
-  currentPage: number;
-  pageSize: number;
-  
-  // Novedades
+  refreshKey: number;
 
-  refreshKey: number; // Para forzar recarga de lista de trámites después de sincronizar
-  
   // Métodos
-  setCuit: (cuit: string) => void;
-  setCit: (cit: string) => void;
+  setCredenciales: (credenciales: CredencialesArba) => void;
   setIsLoggedIn: (status: boolean) => void;
   setIsSyncing: (status: boolean) => void;
-  setSearchQuery: (query: string) => void;
-  setFilterDesde: (date: string) => void;
-  setFilterHasta: (date: string) => void;
-  setFilterPartido: (partido: string) => void;
-  setFilterPartida: (partida: string) => void;
-  setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
-  setFilterEstado: (estado: string) => void;
-  setRefreshKey: () => void;
-  
-  // Novedades (Alertas de cambios de estado)
-  novedades: Novedad[];
+
+  // Tipado estricto: Omitimos 'fecha' del setFiltro general
+  setFiltro: (key: keyof Omit<FiltrosBusqueda, "fecha">, value: string) => void;
+
+  // Tipado estricto: Usamos las llaves de RangoFechas ('desde' | 'hasta')
+  setFiltroFecha: (key: keyof RangoFechas, value: string) => void;
+
+  clearFiltros: () => void;
+  setPaginacion: (key: keyof Paginacion, value: number) => void;
+
   setNovedades: (novedades: Novedad[]) => void;
   clearNovedades: () => void;
-  clearFilters: () => void;
+  setRefreshKey: () => void;
   logout: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
-  // Autenticación
-  cuit: '',
-  cit: '',
+  credenciales: { cuit: "", cit: "" },
   isLoggedIn: false,
-  
-  // Sincronización
   isSyncing: false,
-  
-  // Búsqueda
-  searchQuery: '',
-  filterDesde: '',
-  filterHasta: '',
-  filterPartido: '',
-  filterPartida: '',
-  filterEstado: '',
-  // Paginación
-  currentPage: 1,
-  pageSize: 50,
-  
-  // Novedades
-  novedades: [],
-  //reflesh lista de tramites al sincronizar
 
+  filtros: defaultFiltros,
+  paginacion: defaultPaginacion,
+  novedades: [],
   refreshKey: 0,
-  
-  // Métodos
-  setCuit: (cuit) => set({ cuit }),
-  setCit: (cit) => set({ cit }),
-  setIsLoggedIn: (status) => set({ isLoggedIn: status }),
-  setIsSyncing: (status) => set({ isSyncing: status }),
-  setSearchQuery: (query) => set({ searchQuery: query, currentPage: 1 }),
-  setFilterDesde: (date) => set({ filterDesde: date, currentPage: 1 }),
-  setFilterHasta: (date) => set({ filterHasta: date, currentPage: 1 }),
-  setFilterPartido: (partido) => set({ filterPartido: partido, currentPage: 1 }),
-  setFilterPartida: (partida) => set({ filterPartida: partida, currentPage: 1 }),
-  setCurrentPage: (page) => set({ currentPage: page }),
-  setPageSize: (size) => set({ pageSize: size }),
-  setFilterEstado: (estado) => set({ filterEstado: estado, currentPage: 1 }),
+
+  setCredenciales: (credenciales) => set({ credenciales }),
+  setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
+  setIsSyncing: (isSyncing) => set({ isSyncing }),
+
+  setFiltro: (key, value) =>
+    set((state) => ({
+      filtros: { ...state.filtros, [key]: value },
+      paginacion: { ...state.paginacion, page: 1 },
+    })),
+
+  // Implementación del setter anidado de fechas
+  setFiltroFecha: (key, value) =>
+    set((state) => ({
+      filtros: {
+        ...state.filtros,
+        fecha: {
+          ...state.filtros.fecha,
+          [key]: value,
+        },
+      },
+      paginacion: { ...state.paginacion, page: 1 },
+    })),
+
+  clearFiltros: () =>
+    set((state) => ({
+      filtros: defaultFiltros,
+      paginacion: { ...state.paginacion, page: 1 },
+    })),
+
+  setPaginacion: (key, value) =>
+    set((state) => ({
+      paginacion: { ...state.paginacion, [key]: value },
+    })),
+
   setNovedades: (novedades) => set({ novedades }),
   clearNovedades: () => set({ novedades: [] }),
   setRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
-  clearFilters: () => set({
-    searchQuery: '',
-    filterDesde: '',
-    filterHasta: '',
-    filterPartido: '',
-    filterPartida: '',
-    filterEstado: '',
-    currentPage: 1,
-  }),
-  logout: () => set({
-    cuit: '',
-    cit: '',
-    isLoggedIn: false,
-    searchQuery: '',
-    filterDesde: '',
-    filterHasta: '',
-    filterPartido: '',
-    filterPartida: '',
-    filterEstado: '',
-    currentPage: 1,
-    novedades: [],
-    refreshKey: 0,
-  }),
+
+  logout: () =>
+    set({
+      credenciales: { cuit: "", cit: "" },
+      isLoggedIn: false,
+      filtros: defaultFiltros,
+      paginacion: defaultPaginacion,
+      novedades: [],
+      refreshKey: 0,
+    }),
 }));

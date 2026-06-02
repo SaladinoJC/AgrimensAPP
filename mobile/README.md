@@ -73,14 +73,13 @@ El proyecto usa `app.json` con configuración de Expo:
 - `orientation`: portrait
 - `userInterfaceStyle`: dark
 - `newArchEnabled`: true
-- plugins: `expo-secure-store`, `expo-local-authentication`, `expo-task-manager`, `expo-notifications`, `@react-native-community/datetimepicker`, `expo-sqlite`, `expo-background-task`
+- plugins: `expo-secure-store`, `expo-local-authentication`, `expo-notifications`, `@react-native-community/datetimepicker`, `expo-sqlite`
 
 ## Dependencias clave
 
 - `expo` ~54
 - `react-native` 0.81.5
 - `@react-native-async-storage/async-storage`
-- `expo-background-task`
 - `expo-local-authentication`
 - `expo-notifications`
 - `expo-print`

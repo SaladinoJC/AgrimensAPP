@@ -5,33 +5,33 @@ import { useStore } from '@/store/useStore';
 
 export function useAppBoot() {
   const [appReady, setAppReady] = useState(false);
-  const { setCuit, setCit, setIsLoggedIn } = useStore();
+
+  const setCredenciales = useStore((state) => state.setCredenciales);
+  const setIsLoggedIn = useStore((state) => state.setIsLoggedIn);
 
   useEffect(() => {
     async function bootApp() {
       try {
         // 1. Inicializar la base de datos local
         await initDB();
-        
+
         // 2. Recuperar sesión
-        const savedCuit = await SecureStore.getItemAsync('cuit');
-        const savedCit = await SecureStore.getItemAsync('cit');
-        
+        const savedCuit = await SecureStore.getItemAsync("cuit");
+        const savedCit = await SecureStore.getItemAsync("cit");
+
         if (savedCuit && savedCit) {
-          setCuit(savedCuit);
-          setCit(savedCit);
+          setCredenciales({ cuit: savedCuit, cit: savedCit });
           setIsLoggedIn(true);
         }
-        
       } catch (e) {
         console.error("Error crítico inicializando la app:", e);
       } finally {
         setAppReady(true);
       }
     }
-    
+
     bootApp();
-  }, []);
+  }, [setCredenciales, setIsLoggedIn]); 
 
   return { appReady };
 }
