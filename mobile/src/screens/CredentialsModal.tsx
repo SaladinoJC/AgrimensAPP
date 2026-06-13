@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Modal,
   Text,
   View,
@@ -16,6 +15,7 @@ import { useStore } from "@/store/useStore";
 import { useTheme } from "@/hooks/useTheme";
 import { useStyles } from "@/hooks/useStyles";
 import { useAuthManager } from "@/hooks/useAuthManager";
+import { CustomAlert } from "@/components/ui/CustomAlert";
 
 interface CredentialsModalProps {
   visible: boolean;
@@ -26,34 +26,23 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
   visible,
   onClose,
 }) => {
-  const { handleLogout:logout } = useAuthManager();
+  const { handleLogout: logout } = useAuthManager();
   const { theme, toggleTheme } = useStore();
   const cuit = useStore((state) => state.credenciales.cuit);
+  const [alertVisible, setAlertVisible] = useState(false);
 
   const isDark = theme === "dark";
-
   const { colores } = useTheme();
   const styles = useStyles(createStyles);
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Cerrar Sesión",
-      "¿Estás seguro de que deseas cerrar la sesión?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Cerrar Sesión",
-          style: "destructive",
-          onPress: () => {
-            logout();
-            onClose();
-          },
-        },
-      ],
-    );
+  const handleLogoutPress = () => {
+    setAlertVisible(true);
+  };
+
+  const confirmarLogout = () => {
+    setAlertVisible(false);
+    logout();
+    onClose();
   };
 
   return (
@@ -139,12 +128,24 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         {/* Botón de Cerrar Sesión */}
         <TouchableOpacity
           style={styles.logoutButton}
-          onPress={handleLogout}
+          onPress={handleLogoutPress} 
           activeOpacity={0.8}
         >
           <LogOut size={22} color={colores.C_WHITE} strokeWidth={2.5} />
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
+
+        {/* --- COMPONENTE CUSTOM ALERT --- */}
+        <CustomAlert
+          visible={alertVisible}
+          title="Cerrar Sesión"
+          message="¿Estás seguro de que deseas cerrar la sesión? Tendrás que volver a ingresar tus credenciales."
+          variant="logout"
+          confirmText="Cerrar Sesión"
+          cancelText="Cancelar"
+          onConfirm={confirmarLogout}
+          onCancel={() => setAlertVisible(false)}
+        />
       </SafeAreaView>
     </Modal>
   );
@@ -194,7 +195,6 @@ const createStyles = (colores: any) =>
       padding: 24,
       alignItems: "center",
       marginBottom: 24,
-      // Borde sutil que salva el diseño en modo oscuro
       borderWidth: 1,
       borderColor: colores.C_SURFACE,
       position: "relative",
@@ -332,7 +332,7 @@ const createStyles = (colores: any) =>
       letterSpacing: 0.5,
     },
     themeSwitch: {
-      transform: [{ scale: 1.5 }], 
-      marginRight: 4, 
+      transform: [{ scale: 1.5 }],
+      marginRight: 4,
     },
   });

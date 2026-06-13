@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -18,6 +18,9 @@ import { useTramiteArba } from "@/hooks/useTramiteArba";
 import { useTheme } from "@/hooks/useTheme";
 import { useStyles } from "@/hooks/useStyles";
 
+import { CustomAlert, AlertVariant } from "@/components/ui/CustomAlert";
+import { FileActionModal } from "@/components/ui/FileActionModal";
+
 interface TramiteDetailModalProps {
   visible: boolean;
   tramite: TramiteDetail | null;
@@ -29,6 +32,35 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
   tramite,
   onClose,
 }) => {
+  const [alertConfig, setAlertConfig] = useState({
+    visible: false,
+    title: "",
+    message: "",
+    variant: "info" as AlertVariant,
+  });
+  const [fileMenuConfig, setFileMenuConfig] = useState<{
+    visible: boolean;
+    fileName: string;
+    fileUri: string;
+    mimeType: string;
+  }>({ visible: false, fileName: "", fileUri: "", mimeType: "" });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    variant: AlertVariant = "info",
+  ) => {
+    setAlertConfig({ visible: true, title, message, variant });
+  };
+
+  const handleFileReady = (
+    fileName: string,
+    fileUri: string,
+    mimeType: string,
+  ) => {
+    setFileMenuConfig({ visible: true, fileName, fileUri, mimeType });
+  };
+
   const {
     detallesExtra,
     cargandoDetalles,
@@ -39,7 +71,9 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
     procesarArchivo,
     descargandoId,
     clearData,
-  } = useTramiteArba(tramite?.nroExpediente);
+    verDocumento,
+    compartirDocumento,
+  } = useTramiteArba(tramite?.nroExpediente, showAlert, handleFileReady); 
 
   const { colores } = useTheme();
   const styles = useStyles(createStyles);
@@ -227,14 +261,35 @@ export const TramiteDetailModal: React.FC<TramiteDetailModalProps> = ({
             )}
           </View>
         </ScrollView>
+
+        <CustomAlert
+          visible={alertConfig.visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          variant={alertConfig.variant}
+          onConfirm={() =>
+            setAlertConfig((prev) => ({ ...prev, visible: false }))
+          }
+        />
+        <FileActionModal
+          visible={fileMenuConfig.visible}
+          fileName={fileMenuConfig.fileName}
+          onView={() => {
+            setFileMenuConfig((prev) => ({ ...prev, visible: false }));
+            verDocumento(fileMenuConfig.fileUri, fileMenuConfig.mimeType);
+          }}
+          onShare={() => {
+            setFileMenuConfig((prev) => ({ ...prev, visible: false }));
+            compartirDocumento(fileMenuConfig.fileUri, fileMenuConfig.mimeType);
+          }}
+          onCancel={() =>
+            setFileMenuConfig((prev) => ({ ...prev, visible: false }))
+          }
+        />
       </SafeAreaView>
     </Modal>
   );
 };
-
-// ==========================================
-// SUB-COMPONENTES LOCALES
-// ==========================================
 
 const BasicInfoCards = ({
   tramite,
@@ -321,7 +376,6 @@ const BasicInfoCards = ({
   </View>
 );
 
-// --- FÁBRICA DE ESTILOS ---
 const shadowBase = {
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 2 },
@@ -387,7 +441,7 @@ const createStyles = (colores: any) =>
       flex: 1,
       marginLeft: 12,
       alignItems: "center",
-      },
+    },
     expedienteNumber: {
       fontSize: 22,
       fontWeight: "900",

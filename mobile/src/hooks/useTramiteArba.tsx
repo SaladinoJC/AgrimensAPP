@@ -10,8 +10,13 @@ import {
   obtenerDetallesDelTramite,
 } from "@/services/sync/arbaService";
 import { validarCredencialesHeadless } from "@/services/sync/headlessAdapter";
+import { AlertVariant } from "@/components/ui/CustomAlert";
 
-export const useTramiteArba = (nroExpediente?: string) => {
+export const useTramiteArba = (
+  nroExpediente?: string,
+  showAlert?: (title: string, message: string, variant?: AlertVariant) => void,
+  onFileReady?: (fileName: string, fileUri: string, mimeType: string) => void,
+) => {
   const credenciales = useStore((state) => state.credenciales);
 
   const [detallesExtra, setDetallesExtra] = useState<any>(null);
@@ -20,8 +25,15 @@ export const useTramiteArba = (nroExpediente?: string) => {
   const [archivos, setArchivos] = useState<ArchivoArba[] | null>(null);
   const [cargandoArchivos, setCargandoArchivos] = useState(false);
 
-  // Nuevo: Saber exactamente qué archivo se está descargando para la UI
   const [descargandoId, setDescargandoId] = useState<number | null>(null);
+
+  const notificarError = (titulo: string, mensaje: string) => {
+    if (showAlert) {
+      showAlert(titulo, mensaje, "danger");
+    } else {
+      Alert.alert(titulo, mensaje);
+    }
+  };
 
   const clearData = () => {
     setDetallesExtra(null);
@@ -39,7 +51,10 @@ export const useTramiteArba = (nroExpediente?: string) => {
       );
       setDetallesExtra(data);
     } catch (error) {
-      Alert.alert("Error", "No se pudieron cargar los detalles adicionales.");
+      notificarError(
+        "Error de Conexión",
+        "No se pudieron cargar los detalles adicionales del trámite.",
+      );
     } finally {
       setCargandoDetalles(false);
     }
@@ -56,30 +71,31 @@ export const useTramiteArba = (nroExpediente?: string) => {
       );
       setArchivos(data);
     } catch (error) {
-      Alert.alert("Error", "No se pudieron cargar los archivos.");
+      notificarError(
+        "Error al cargar",
+        "No se pudieron cargar los documentos adjuntos.",
+      );
     } finally {
       setCargandoArchivos(false);
     }
   };
 
-  // Funciones de acción nativas
   const verDocumento = async (uri: string, mimeType: string) => {
     if (Platform.OS === "android") {
       try {
         const contentUri = await FileSystem.getContentUriAsync(uri);
         await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
           data: contentUri,
-          flags: 1, // Permiso de lectura temporal
+          flags: 1,
           type: mimeType,
         });
       } catch (e) {
-        Alert.alert(
-          "Error",
-          "No tienes una aplicación para abrir este archivo.",
+        notificarError(
+          "Aplicación no encontrada",
+          "No tenés ninguna aplicación instalada para poder abrir este tipo de archivo.",
         );
       }
     } else {
-      // En iOS Sharing actúa como visor previo excelente
       await Sharing.shareAsync(uri, {
         UTI:
           mimeType === "application/pdf"
@@ -103,8 +119,6 @@ export const useTramiteArba = (nroExpediente?: string) => {
 
     const nombreSeguro = archivo.descripcion.replace(/[^a-zA-Z0-9]/g, "_");
     const nombreArchivo = `${nombreSeguro}_${archivo.secuencia}_v2.${archivo.extension}`;
-
-    // Usamos documentDirectory porque es más estable para enviar a otras apps que cacheDirectory
     const fileUri = `${FileSystem.documentDirectory}${nombreArchivo}`;
     const mimeType =
       archivo.extension === "pdf" ? "application/pdf" : "application/zip";
@@ -112,12 +126,10 @@ export const useTramiteArba = (nroExpediente?: string) => {
     try {
       const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
-      // Si no existe, lo descargamos de forma segura
       if (!fileInfo.exists) {
         await validarCredencialesHeadless(credenciales.cuit, credenciales.cit);
         const url = `https://www16.arba.gov.ar/DSISIC/obtenerAdjunto.do?metodo=obtenerAdjuntoVisualizar&nroTramite=${archivo.numeroTramite}&archAdjunto=${archivo.secuencia}&tipoArchivo=${archivo.tipo}&tipoExtension=${archivo.extension}&carpetaAplicacion=${archivo.carpeta}`;
 
-        // 1. Engañamos a ARBA haciéndole creer que somos Google Chrome en Windows
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -125,23 +137,17 @@ export const useTramiteArba = (nroExpediente?: string) => {
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             Accept:
               "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            Referer: "https://www16.arba.gov.ar/", // Le decimos que venimos de su propia página
+            Referer: "https://www16.arba.gov.ar/",
           },
         });
 
-        // 2. Escudo Anti-Login y manejo de errores
         const contentType = response.headers.get("content-type") || "";
 
         if (contentType.toLowerCase().includes("text/html") || !response.ok) {
-          // Si nos rebota, leemos el HTML y lo imprimimos para saber por qué falló
           const errorHtml = await response.text();
-          console.log("🛑 ARBA DEVOLVIÓ HTML EN VEZ DEL ARCHIVO:");
-          console.log(errorHtml.substring(0, 800)); // Imprimimos los primeros 800 caracteres
-
           throw new Error("La sesión expiró o ARBA bloqueó la descarga.");
         }
 
-        // 3. Si pasamos el escudo, convertimos a base64
         const blob = await response.blob();
         const base64data = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -155,26 +161,13 @@ export const useTramiteArba = (nroExpediente?: string) => {
         });
       }
 
-      // El archivo ya está local en el celular. Preguntamos qué hacer.
-      Alert.alert(
-        "Archivo Listo",
-        `¿Qué deseas hacer con ${archivo.descripcion}?`,
-        [
-          {
-            text: "Ver Documento",
-            onPress: () => verDocumento(fileUri, mimeType),
-          },
-          {
-            text: "Compartir",
-            onPress: () => compartirDocumento(fileUri, mimeType),
-          },
-          { text: "Cancelar", style: "cancel" },
-        ],
-      );
+      if (onFileReady) {
+        onFileReady(archivo.descripcion, fileUri, mimeType);
+      }
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.message || "Hubo un problema con el documento.",
+      notificarError(
+        "Error de Descarga",
+        error.message || "Hubo un problema al intentar descargar el documento.",
       );
     } finally {
       setDescargandoId(null);
@@ -191,5 +184,7 @@ export const useTramiteArba = (nroExpediente?: string) => {
     procesarArchivo,
     descargandoId,
     clearData,
+    verDocumento,
+    compartirDocumento,
   };
 };
