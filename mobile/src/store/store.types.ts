@@ -11,6 +11,7 @@ export type CredencialesArba = {
 export type FiltrosBusqueda = {
   query: string;
   fecha: RangoFechas;
+  oblea: string;
   partido: string;
   partida: string;
   estado: string;
@@ -25,6 +26,7 @@ export type Paginacion = {
 export const defaultFiltros: FiltrosBusqueda = {
   query: "",
   fecha: { desde: "", hasta: "" },
+  oblea: "",
   partido: "",
   partida: "",
   estado: "",
