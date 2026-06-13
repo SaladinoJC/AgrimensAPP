@@ -8,6 +8,7 @@ import {
   Paginacion,
   RangoFechas,
 } from "@/store/store.types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface AppState {
   // Autenticación
@@ -26,6 +27,7 @@ interface AppState {
   //theme
   theme: "light" | "dark";
   toggleTheme: () => void;
+  setTheme: (theme: "light" | "dark") => void;
 
   // Métodos
   setCredenciales: (credenciales: CredencialesArba) => void;
@@ -47,7 +49,7 @@ interface AppState {
   logout: () => void;
 }
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>((set, get) => ({
   credenciales: { cuit: "", cit: "" },
   isLoggedIn: false,
   isSyncing: false,
@@ -95,10 +97,15 @@ export const useStore = create<AppState>((set) => ({
   clearNovedades: () => set({ novedades: [] }),
   setRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
 
-  theme: 'dark',
-    toggleTheme: () => set((state) => ({ 
-      theme: state.theme === 'dark' ? 'light' : 'dark' 
-    })),
+  theme: "dark", // o el default que tengas
+
+  toggleTheme: () => {
+    const newTheme = get().theme === "dark" ? "light" : "dark";
+    set({ theme: newTheme });
+    AsyncStorage.setItem("app_theme", newTheme).catch(console.error);
+  },
+
+  setTheme: (theme: "light" | "dark") => set({ theme }),
 
   logout: () =>
     set({
