@@ -6,29 +6,46 @@ import {
   View 
 } from "react-native";
 
-const C_BG = "#0f1724";
-const C_PRIMARY = "#00bfa5";
-const C_TEXT2 = "#90a4ae";
+import { useTheme } from '@/hooks/useTheme';
+import { useStyles } from '@/hooks/useStyles';
 
 export const LoadingTramitesSpinner: React.FC = () => {
+  const { colores } = useTheme();
+  const styles = useStyles(createStyles);
+
   return (
     <View style={styles.centerContainer}>
-      <ActivityIndicator size="large" color={C_PRIMARY} />
+      <View style={styles.spinnerContainer}>
+        <ActivityIndicator size="large" color={colores.C_PRIMARY} />
+      </View>
       <Text style={styles.loadingText}>Cargando trámites...</Text>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colores: any) => StyleSheet.create({
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: C_BG,
+    backgroundColor: colores.C_BG,
+  },
+  spinnerContainer: {
+    backgroundColor: colores.C_SURFACE,
+    padding: 16,
+    borderRadius: 50,
+    marginBottom: 16,
+    // Sombras suaves
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   loadingText: {
-    color: C_TEXT2,
-    marginTop: 12,
+    color: colores.C_TEXT2,
     fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 0.5, 
   }
 });

@@ -1,11 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, Modal, FlatList, TouchableOpacity } from 'react-native';
-
-const C_CARD = "#1e2a42";
-const C_SURFACE = "#182136";
-const C_PRIMARY = "#00bfa5";
-const C_TEXT = "#eceff1";
-const C_TEXT2 = "#90a4ae";
+import { useTheme } from '@/hooks/useTheme';
 
 export interface SelectOption {
   label: string;
@@ -29,6 +24,8 @@ export const SelectModal: React.FC<SelectModalProps> = ({
   onSelect,
   onClose,
 }) => {
+  const { colores } = useTheme();
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <TouchableOpacity 
@@ -36,8 +33,8 @@ export const SelectModal: React.FC<SelectModalProps> = ({
         activeOpacity={1} 
         onPress={onClose}
       >
-        <View style={styles.selectMenu}>
-          <Text style={styles.selectMenuTitle}>{title}</Text>
+        <View style={[styles.selectMenu, { backgroundColor: colores.C_CARD }]}> 
+          <Text style={[styles.selectMenuTitle, { color: colores.C_TEXT2 }]}>{title}</Text>
           <FlatList
             data={options}
             keyExtractor={(item) => item.value}
@@ -45,13 +42,21 @@ export const SelectModal: React.FC<SelectModalProps> = ({
               const isActive = selectedValue === item.value;
               return (
                 <TouchableOpacity 
-                  style={[styles.selectOption, isActive && styles.selectOptionActive]}
+                  style={[
+                    styles.selectOption,
+                    { borderBottomColor: colores.C_SURFACE },
+                    isActive && styles.selectOptionActive,
+                  ]}
                   onPress={() => {
                     onSelect(item.value);
                     onClose();
                   }}
                 >
-                  <Text style={[styles.selectOptionText, isActive && styles.selectOptionTextActive]}>
+                  <Text style={[
+                    styles.selectOptionText,
+                    { color: colores.C_TEXT },
+                    isActive && { color: colores.C_PRIMARY, fontWeight: 'bold' },
+                  ]}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -72,13 +77,11 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   selectMenu: {
-    backgroundColor: C_CARD,
     borderRadius: 12,
     padding: 16,
     maxHeight: '80%',
   },
   selectMenuTitle: {
-    color: C_TEXT2,
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 12,
@@ -87,7 +90,7 @@ const styles = StyleSheet.create({
   selectOption: {
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: C_SURFACE,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   selectOptionActive: {
     backgroundColor: 'rgba(0, 191, 165, 0.1)', 
@@ -95,11 +98,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   selectOptionText: {
-    color: C_TEXT,
     fontSize: 16,
   },
   selectOptionTextActive: {
-    color: C_PRIMARY,
     fontWeight: 'bold',
   }
 });

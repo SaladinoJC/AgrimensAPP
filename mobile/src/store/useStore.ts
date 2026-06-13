@@ -23,6 +23,10 @@ interface AppState {
   isSyncing: boolean;
   refreshKey: number;
 
+  //theme
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+
   // Métodos
   setCredenciales: (credenciales: CredencialesArba) => void;
   setIsLoggedIn: (status: boolean) => void;
@@ -90,6 +94,11 @@ export const useStore = create<AppState>((set) => ({
   setNovedades: (novedades) => set({ novedades }),
   clearNovedades: () => set({ novedades: [] }),
   setRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
+
+  theme: 'dark',
+    toggleTheme: () => set((state) => ({ 
+      theme: state.theme === 'dark' ? 'light' : 'dark' 
+    })),
 
   logout: () =>
     set({

@@ -5,14 +5,16 @@ import {
   FlatList,
   Text,
 } from 'react-native';
+import { FileQuestion } from 'lucide-react-native';
+
 import { useStore } from '@/store/useStore';
 import { getTramites } from '@/db/database';
 import { TramiteCard } from '@/components/ui/TramiteCard';
 import { TramiteDetailModal } from '@/components/TramiteDetailModal';
 import { LoadingTramitesSpinner } from '@/components/ui/LoadingTramitesSpinner';
 
-const C_BG = "#0f1724";
-const C_TEXT2 = "#90a4ae";
+import { useTheme } from '@/hooks/useTheme';
+import { useStyles } from '@/hooks/useStyles';
 
 interface TramiteListProps {
   isLoading?: boolean;
@@ -30,6 +32,9 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
   const [modalVisible, setModalVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
+  
+  const { colores } = useTheme();
+  const styles = useStyles(createStyles);
 
   useEffect(() => {
     loadTramites();
@@ -82,7 +87,6 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
     [handleTramitePress],
   );
 
-
   if (isLoading || isLoadingData || isSyncing) {
     return <LoadingTramitesSpinner />;
   }
@@ -90,7 +94,13 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
   if (tramites.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>No hay trámites para mostrar</Text>
+        <View style={styles.emptyIconContainer}>
+          <FileQuestion size={48} color={colores.C_TEXT2} strokeWidth={1.5} />
+        </View>
+        <Text style={styles.emptyTitle}>Sin resultados</Text>
+        <Text style={styles.emptyText}>
+          No encontramos expedientes que coincidan con los filtros aplicados.
+        </Text>
       </View>
     );
   }
@@ -104,6 +114,7 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
         keyExtractor={(item) => item.nroExpediente}
         scrollEnabled={true}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
       />
 
       <TramiteDetailModal
@@ -115,15 +126,41 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
   );
 };
 
-const styles = StyleSheet.create({
+
+const createStyles = (colores: any) => StyleSheet.create({
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: C_BG,
+    backgroundColor: colores.C_BG,
+    paddingHorizontal: 40,
+  },
+  emptyIconContainer: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: colores.C_CARD,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colores.C_SURFACE,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: colores.C_TEXT,
+    marginBottom: 8,
+    letterSpacing: -0.3,
   },
   emptyText: {
-    color: C_TEXT2,
-    fontSize: 16,
+    color: colores.C_TEXT2,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
   },
+  listContent: {
+    paddingTop: 4,
+    paddingBottom: 20,
+  }
 });

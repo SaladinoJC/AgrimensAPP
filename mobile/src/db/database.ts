@@ -36,6 +36,7 @@ export const initDB = async () => {
     CREATE TABLE IF NOT EXISTS notificaciones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nroExpediente TEXT,
+        tipo_tramite TEXT,
         viejo_estado TEXT,
         nuevo_estado TEXT,
         fecha TEXT,
@@ -71,8 +72,8 @@ export const upsertTramites = async (rows: any[]) => {
     for (let i = 0; i < nros.length; i += CHUNK) {
       const chunk = nros.slice(i, i + CHUNK);
       const placeholders = chunk.map(() => '?').join(',');
-      const q = `SELECT nroExpediente, estado FROM tramites WHERE nroExpediente IN (${placeholders})`;
-      const rowsPrev = await db.getAllAsync<{ nroExpediente: string; estado: string }>(q, chunk);
+      const q = `SELECT nroExpediente, tipo_tramite, estado FROM tramites WHERE nroExpediente IN (${placeholders})`;
+      const rowsPrev = await db.getAllAsync<{ nroExpediente: string; tipo_tramite: string; estado: string }>(q, chunk);
       for (const r of rowsPrev) {
         if (r?.nroExpediente) estadoPrevio.set(String(r.nroExpediente), String(r.estado ?? ''));
       }
@@ -87,7 +88,7 @@ export const upsertTramites = async (rows: any[]) => {
       // Check for novedades
       const viejoEstado = estadoPrevio.get(nro);
       if (viejoEstado && viejoEstado.toUpperCase() !== estado_nuevo.toUpperCase()) {
-        novedades.push({ nro, viejo: viejoEstado, nuevo: estado_nuevo });
+        novedades.push({ nro, tipo_tramite: String(r.tramite || r.tipo_tramite || ""), viejo: viejoEstado, nuevo: estado_nuevo });
       }
 
       const fecha_estado = String(r.fechaEstado || r.fecha_movimiento || "");

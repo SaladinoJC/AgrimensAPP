@@ -15,17 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Lock, Fingerprint, Eye, EyeOff } from 'lucide-react-native';
+
 import { useStore } from '@/store/useStore';
 import { useBiometric } from '@/auth/useBiometric';
-import { logoutHeadless, validarCredencialesHeadless } from '@/services/sync/headlessAdapter';
 import { SyncError } from '@/services/sync/types';
 
-const C_BG = "#0f1724";
-const C_SURFACE = "#182136";
-const C_CARD = "#1e2a42";
-const C_PRIMARY = "#00bfa5";
-const C_TEXT = "#eceff1";
-const C_TEXT2 = "#90a4ae";
+import { useTheme } from '@/hooks/useTheme';
+import { useStyles } from '@/hooks/useStyles';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -42,6 +38,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const setIsLoggedIn = useStore((state) => state.setIsLoggedIn);
 
   const { checkBiometricAvailability, authenticate, isLoading: bioLoading } = useBiometric();
+
+  const { theme, colores } = useTheme();
+  const styles = useStyles(createStyles);
 
   useEffect(() => {
     checkBiometricAvailability().then((result) => {
@@ -62,13 +61,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           await AsyncStorage.setItem('isLoggedIn', 'true');
           onLoginSuccess();
         } else {
-          Alert.alert('Error', 'No hay credenciales guardadas');
+          Alert.alert('Error', 'No hay credenciales guardadas en este dispositivo.');
         }
       } catch (error) {
-        Alert.alert('Error', 'No se pudieron obtener las credenciales');
+        Alert.alert('Error', 'No se pudieron obtener las credenciales.');
       }
     } else {
-      Alert.alert('Autenticación', authResult.error || 'La autenticación falló');
+      Alert.alert('Autenticación', authResult.error || 'La autenticación falló.');
     }
   };
 
@@ -77,7 +76,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     const citLimpio = cit.trim();
 
     if (!cuitLimpio || !citLimpio) {
-      Alert.alert('Error', 'Por favor completa CUIT y CIT');
+      Alert.alert('Datos incompletos', 'Por favor completa CUIT y CIT.');
       return;
     }
 
@@ -105,32 +104,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={C_BG} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.content}>
+    <SafeAreaView style={styles.container}> 
+      <StatusBar 
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} 
+        backgroundColor={colores.C_BG} 
+      />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={styles.content}
+      >
+        {/* Cabecera / Logo */}
         <View style={styles.header}>
-          <Lock size={48} color={C_PRIMARY} />
+          <View style={styles.iconContainer}>
+            <Lock size={42} color={colores.C_PRIMARY} strokeWidth={2.5} />
+          </View>
           <Text style={styles.title}>AgrimensAPP</Text>
           <Text style={styles.subtitle}>Sistema de Monitoreo de Trámites ARBA</Text>
         </View>
 
-        <View style={styles.card}>
+        {/* Tarjeta de Formulario */}
+        <View style={styles.card}> 
+          
           {showBiometricButton && !bioLoading && (
             <>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
                 disabled={bioLoading}
+                activeOpacity={0.8}
               >
-                <Fingerprint size={40} color={C_PRIMARY} />
-                <Text style={styles.biometricText}>
+                <Fingerprint size={32} color={colores.C_PRIMARY} />
+                <Text style={styles.biometricText}> 
                   {bioLoading ? 'Autenticando...' : 'Ingresar con Huella/Rostro'}
                 </Text>
               </TouchableOpacity>
 
               <View style={styles.divider}>
                 <View style={styles.line} />
-                <Text style={styles.dividerText}>O</Text>
+                <Text style={styles.dividerText}>o ingresá con tus credenciales</Text>
                 <View style={styles.line} />
               </View>
             </>
@@ -140,33 +151,37 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           <TextInput
             style={styles.input}
             placeholder="23123456780"
-            placeholderTextColor={C_TEXT2}
+            placeholderTextColor={colores.C_TEXT2}
             value={cuit}
             onChangeText={setCuit}
             editable={!isLoading}
             keyboardType="numeric"
             maxLength={11}
+            autoCapitalize="none"
           />
 
           <Text style={styles.label}>CIT (Contraseña)</Text>
-          <View style={styles.passwordContainer}>
+          <View style={styles.passwordContainer}> 
             <TextInput
               style={styles.passwordInput}
-              placeholder="Contraseña"
-              placeholderTextColor={C_TEXT2}
+              placeholder="Tu contraseña de ARBA"
+              placeholderTextColor={colores.C_TEXT2}
               value={cit}
               onChangeText={setCit}
               secureTextEntry={!showPassword}
               editable={!isLoading}
+              autoCapitalize="none"
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               disabled={isLoading}
+              style={styles.eyeIcon}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               {showPassword ? (
-                <EyeOff size={20} color={C_TEXT2} />
+                <EyeOff size={22} color={colores.C_TEXT2} />
               ) : (
-                <Eye size={20} color={C_TEXT2} />
+                <Eye size={22} color={colores.C_TEXT2} />
               )}
             </TouchableOpacity>
           </View>
@@ -175,16 +190,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             style={[styles.loginButton, isLoading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
+            activeOpacity={0.8}
           >
             {isLoading ? (
-              <ActivityIndicator color={C_BG} />
+              <ActivityIndicator color={colores.C_BG} />
             ) : (
               <Text style={styles.loginButtonText}>GUARDAR Y CONTINUAR</Text>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.warningText}>
-            ⚠️ Tus credenciales se guardan de forma segura en el dispositivo
+          <Text style={styles.warningText}> 
+            ⚠️ Tus credenciales se guardan de forma encriptada únicamente en este dispositivo.
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -192,10 +208,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const shadowBase = {
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 4,
+};
+
+const createStyles = (colores: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: C_BG,
+    backgroundColor: colores.C_BG,
   },
   content: {
     flex: 1,
@@ -206,38 +230,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    backgroundColor: colores.C_CARD,
+    borderWidth: 2,
+    borderColor: colores.C_SURFACE,
+    ...shadowBase, 
+  },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: C_TEXT,
-    marginTop: 16,
+    fontWeight: '900',
+    color: colores.C_TEXT,
+    letterSpacing: -1,
   },
   subtitle: {
-    fontSize: 14,
-    color: C_TEXT2,
+    fontSize: 15,
     marginTop: 8,
+    color: colores.C_TEXT2,
     textAlign: 'center',
+    fontWeight: '500',
   },
   card: {
-    backgroundColor: C_CARD,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    ...shadowBase,
+    backgroundColor: colores.C_CARD,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colores.C_SURFACE,
   },
   biometricButton: {
-    backgroundColor: C_SURFACE,
-    borderColor: C_PRIMARY,
-    borderWidth: 2,
-    borderRadius: 12,
-    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: colores.C_SURFACE,
+    borderWidth: 1,
+    borderColor: colores.C_PRIMARY,
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
-    marginBottom: 16,
+    gap: 12, 
   },
   biometricText: {
-    color: C_TEXT,
-    marginTop: 12,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: colores.C_TEXT,
   },
   divider: {
     flexDirection: 'row',
@@ -247,62 +287,74 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: C_TEXT2,
+    backgroundColor: colores.C_SURFACE,
   },
   dividerText: {
     marginHorizontal: 12,
-    color: C_TEXT2,
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '600',
+    color: colores.C_TEXT2,
+    textTransform: 'uppercase',
   },
   label: {
-    color: C_TEXT,
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     marginBottom: 8,
-    marginTop: 12,
+    color: colores.C_TEXT,
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: C_SURFACE,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: C_TEXT,
+    backgroundColor: colores.C_SURFACE,
+    color: colores.C_TEXT,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colores.C_SURFACE,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C_SURFACE,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginTop: 8,
+    backgroundColor: colores.C_SURFACE,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colores.C_SURFACE,
   },
   passwordInput: {
     flex: 1,
-    paddingVertical: 12,
-    color: C_TEXT,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
+    color: colores.C_TEXT,
+  },
+  eyeIcon: {
+    paddingHorizontal: 16,
   },
   loginButton: {
-    backgroundColor: C_PRIMARY,
-    borderRadius: 8,
-    paddingVertical: 14,
-    marginTop: 24,
+    backgroundColor: colores.C_PRIMARY,
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginTop: 28,
     alignItems: 'center',
+    ...shadowBase,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.7,
   },
   loginButtonText: {
-    color: C_BG,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '800',
+    color: colores.C_BG, 
+    letterSpacing: 0.5,
   },
   warningText: {
-    color: C_TEXT2,
     fontSize: 12,
-    marginTop: 16,
+    marginTop: 20,
     textAlign: 'center',
     lineHeight: 18,
+    color: colores.C_TEXT2,
+    fontWeight: '500',
   },
 });
