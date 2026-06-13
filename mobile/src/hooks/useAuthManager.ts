@@ -1,13 +1,16 @@
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { clearDatabase , clearNotificaciones} from '@/db/database';
-import { useStore } from '@/store/useStore';
-import { autenticarAccesoLocal } from '@/auth/authLocal';
+import { useCallback, useState } from "react";
+import { Alert } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { clearDatabase, clearNotificaciones } from "@/db/database";
+import { useStore } from "@/store/useStore";
+import { autenticarAccesoLocal } from "@/auth/authLocal";
+import { AlertVariant } from "@/components/ui/CustomAlert";
 // import CookieManager from '@react-native-cookies/cookies';
 
-export function useAuthManager() {
+export function useAuthManager(
+  showAlert?: (title: string, message: string, variant?: AlertVariant) => void,
+) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const storeLogout = useStore((state) => state.logout);
 
@@ -36,15 +39,26 @@ export function useAuthManager() {
       setIsAuthenticated(true);
       return true;
     } else {
-      Alert.alert("Acceso denegado", result.message);
+      if (showAlert) {
+        showAlert(
+          "Autenticación fallida",
+          result.message || "No se pudo verificar tu identidad.",
+          "warning",
+        );
+      } else {
+        Alert.alert(
+          "Autenticación fallida",
+          result.message || "No se pudo verificar tu identidad.",
+        );
+      }
       return false;
     }
-  }, []);
+  }, [showAlert]);
 
-  return { 
-    isAuthenticated, 
-    setIsAuthenticated, 
-    handleLogout, 
-    unlockApp 
+  return {
+    isAuthenticated,
+    setIsAuthenticated,
+    handleLogout,
+    unlockApp,
   };
 }

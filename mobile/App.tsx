@@ -44,9 +44,18 @@ export default function App() {
     onConfirmAction: undefined as (() => void) | undefined, 
   });
 
+  const showAlert = (
+    title: string,
+    message: string,
+    variant: AlertVariant = "info",
+    onConfirmAction?: () => void,
+  ) => {
+    setAlertConfig({ visible: true, title, message, variant, onConfirmAction });
+  };
+
   const { appReady } = useAppBoot();
   const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } =
-    useAuthManager();
+    useAuthManager( showAlert);
   const { sync, cancelSync, sincronizadorElement } = useSincronizador();
 
   const appState = useRef(AppState.currentState);
@@ -88,15 +97,6 @@ export default function App() {
 
     return () => subscripcion.remove();
   }, [setIsAuthenticated]);
-
-  const showAlert = (
-    title: string,
-    message: string,
-    variant: AlertVariant = "info",
-    onConfirmAction?: () => void,
-  ) => {
-    setAlertConfig({ visible: true, title, message, variant, onConfirmAction });
-  };
 
   const handleAlertConfirm = () => {
     if (alertConfig.onConfirmAction) {

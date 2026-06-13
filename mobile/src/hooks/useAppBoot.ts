@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from "react-native";
 import { initDB } from '@/db/database';
 import { useStore } from '@/store/useStore';
-import AsyncStorage from '@react-native-async-storage/async-storage/lib/typescript/AsyncStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function useAppBoot() {
   const [appReady, setAppReady] = useState(false);
