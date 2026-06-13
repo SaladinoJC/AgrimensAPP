@@ -193,7 +193,7 @@ export const getTramites = async (
     params.push(s, s, s, s, s, s, s);
   }
 
-  q += " ORDER BY fecha_alta DESC, fecha_movimiento DESC LIMIT ? OFFSET ?";
+  q += " ORDER BY fecha_movimiento DESC, fecha_alta DESC LIMIT ? OFFSET ?";
   params.push(limit, offset);
 
   return await db.getAllAsync(q, params);
