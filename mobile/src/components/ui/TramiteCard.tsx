@@ -35,7 +35,7 @@ export const TramiteCard: React.FC<TramiteCardProps> = ({
         {/* Contenido principal */}
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
-            <Text style={styles.expediente}>#{tramite.nroExpediente}</Text>
+            <Text style={styles.expediente}>#{tramite.oblea || tramite.nroExpediente}</Text>
           </View>
 
           <Text style={styles.tipoTramite} numberOfLines={1}>

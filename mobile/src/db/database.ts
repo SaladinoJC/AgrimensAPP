@@ -148,6 +148,7 @@ export const getTramites = async (
   hasta: string = "",
   partido: string = "",
   partida: string = "",
+  oblea: string = "",
   estado: string = "",
   tipo_tramite: string = "",
   limit: number = 50,
@@ -167,6 +168,11 @@ export const getTramites = async (
   if (hasta) {
     q += " AND SUBSTR(fecha_alta, 1, 10) <= ?";
     params.push(hasta);
+  }
+
+  if(oblea) {
+    q += " AND oblea LIKE ?";
+    params.push(`%${oblea}%`);
   }
 
   if (partido) {

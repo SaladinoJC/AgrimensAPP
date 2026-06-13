@@ -59,6 +59,7 @@ export const TramiteList: React.FC<TramiteListProps> = ({ isLoading = false }) =
         filtros.query,
         filtros.fecha.desde,
         filtros.fecha.hasta,
+        filtros.oblea,
         filtros.partido,
         filtros.partida,
         filtros.estado,
