@@ -116,9 +116,12 @@ export const useTramiteArba = (
 
   const procesarArchivo = async (archivo: ArchivoArba) => {
     setDescargandoId(archivo.secuencia);
+    console.log("Procesando archivo:", archivo);
 
     const nombreSeguro = archivo.descripcion.replace(/[^a-zA-Z0-9]/g, "_");
-    const nombreArchivo = `${nombreSeguro}_${archivo.secuencia}_v2.${archivo.extension}`;
+
+    // Agregamos el numeroTramite al nombre para evitar colisiones si varios tienen secuencia 0
+    const nombreArchivo = `${nombreSeguro}_${archivo.numeroTramite}_${archivo.secuencia}_v2.${archivo.extension}`;
     const fileUri = `${FileSystem.documentDirectory}${nombreArchivo}`;
     const mimeType =
       archivo.extension === "pdf" ? "application/pdf" : "application/zip";
@@ -128,7 +131,20 @@ export const useTramiteArba = (
 
       if (!fileInfo.exists) {
         await validarCredencialesHeadless(credenciales.cuit, credenciales.cit);
-        const url = `https://www16.arba.gov.ar/DSISIC/obtenerAdjunto.do?metodo=obtenerAdjuntoVisualizar&nroTramite=${archivo.numeroTramite}&archAdjunto=${archivo.secuencia}&tipoArchivo=${archivo.tipo}&tipoExtension=${archivo.extension}&carpetaAplicacion=${archivo.carpeta}`;
+
+        // --- LÓGICA DE RUTEO DE URL ---
+        let url = "";
+
+        if (
+          !archivo.carpeta ||
+          archivo.descripcion === "Comprobante informativo"
+        ) {
+          // Endpoint especial para el comprobante informativo
+          url = `https://www16.arba.gov.ar/DSISIC/consultaComprobanteInformativoJson.do?metodo=mostrarComprobante&nroTramite=${archivo.numeroTramite}`;
+        } else {
+          // Endpoint clásico para adjuntos (zips, pdfs normales)
+          url = `https://www16.arba.gov.ar/DSISIC/obtenerAdjunto.do?metodo=obtenerAdjuntoVisualizar&nroTramite=${archivo.numeroTramite}&archAdjunto=${archivo.secuencia}&tipoArchivo=${archivo.tipo}&tipoExtension=${archivo.extension}&carpetaAplicacion=${archivo.carpeta}`;
+        }
 
         const response = await fetch(url, {
           method: "GET",

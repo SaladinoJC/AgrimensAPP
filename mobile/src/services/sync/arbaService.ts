@@ -75,7 +75,7 @@ export async function obtenerArchivosDelTramite(
     });
 
     const text = await response.text();
-
+    console.log("Respuesta de ARBA (archivos):", text);
     // ESCUDO
     if (text.trim().startsWith("<")) {
       throw new Error("ARBA rechazó la sesión y devolvió HTML.");
