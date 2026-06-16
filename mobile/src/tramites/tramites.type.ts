@@ -33,6 +33,7 @@ export const ESTADOS_OPC = [
   { label: "FINALIZADO", value: "FINALIZADO" },
   { label: "FINALIZADO SIN ENTREGA DE DOC", value: "FINALIZADO SIN ENTREGA DE DOC" },
   { label: "PENDIENTE DE RECEPCION EN ZONA", value: "PENDIENTE DE RECEPCION EN ZONA" },
+  { label: "INICIADO EN", value: "INICIADO EN" },
   { label: "RECHAZADO", value: "RECHAZADO" },
 ];
 
