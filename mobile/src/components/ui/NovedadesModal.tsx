@@ -51,7 +51,7 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({
           {/* Lista de Novedades */}
           <FlatList
             data={novedades}
-            keyExtractor={(item) => String(item.nro)} 
+            keyExtractor={(item) => String(item.nroExpediente)} 
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
             renderItem={({ item }) => (
@@ -61,9 +61,9 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({
                 <View style={styles.novedadHeader}>
                   <FileText size={16} color={colores.C_PRIMARY} />
                   <View style={styles.novedadHeaderText}>
-                    <Text style={styles.novedadTitle}>#{item.nro}</Text>
+                    <Text style={styles.novedadTitle}>#{item.nroExpediente}</Text>
                     <Text style={styles.novedadTipo} numberOfLines={1}>
-                      {item.tipo_tramite || "Trámite de Agrimensura"}
+                      {item.tipo_tramite}
                     </Text>
                   </View>
                 </View>
@@ -71,7 +71,7 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({
                 {/* Transición de Estados Compacta */}
                 <View style={styles.stateChangeContainer}>
                   <Text style={styles.stateTextViejo} numberOfLines={2}>
-                    {item.viejo}
+                    {item.viejo_estado || "-"}
                   </Text>
                   
                   <View style={styles.arrowContainer}>
@@ -79,7 +79,7 @@ export const NovedadesModal: React.FC<NovedadesModalProps> = ({
                   </View>
                   
                   <Text style={styles.stateTextNuevo} numberOfLines={2}>
-                    {item.nuevo}
+                    {item.nuevo_estado || "-"}
                   </Text>
                 </View>
                 

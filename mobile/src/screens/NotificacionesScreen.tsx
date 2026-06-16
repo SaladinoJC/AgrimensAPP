@@ -35,6 +35,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useStyles } from "@/hooks/useStyles";
 import { CustomAlert } from "@/components/ui/CustomAlert";
 import { LoadingTramitesSpinner } from "@/components/ui/LoadingTramitesSpinner";
+import { Novedad } from "@/novedades/types";
 
 const C_RED = "#ef5350";
 
@@ -72,7 +73,7 @@ export const NotificacionesScreen = ({
 }: NotificacionesScreenProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [alertVisible, setAlertVisible] = useState(false);
-  const [historial, setHistorial] = useState<any[]>([]);
+  const [historial, setHistorial] = useState<Novedad[]>([]);
   const [selectedTramite, setSelectedTramite] = useState<TramiteDetail | null>(
     null,
   );
@@ -116,7 +117,7 @@ export const NotificacionesScreen = ({
     setHistorial((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const onOpenTramite = async (nroExpediente: string) => {
+  const onOpenTramite = async (nroExpediente: number) => {
     try {
       const tramite = await getTramiteByNro(nroExpediente);
       if (tramite) {
@@ -230,7 +231,7 @@ export const NotificacionesScreen = ({
 
                       {/* Fila 2: Tipo de Trámite */}
                       <Text style={styles.tipoTramite} numberOfLines={1}>
-                        {item.tipo_tramite || "Trámite de Agrimensura"}
+                        {item.tipo_tramite}
                       </Text>
 
                       {/* Fila 4: Transición de Estados */}

@@ -100,12 +100,13 @@ export const upsertTramites = async (rows: any[]) => {
         viejoEstado.toUpperCase() !== estado_nuevo.toUpperCase()
       ) {
         novedades.push({
-          nro,
+          id: 0, // Will be set by the database
+          nroExpediente: parseInt(nro),
           partido: String(r.partido || ""),
           partida: String(r.partida || ""),
-          tipo_tramite: String(r.tipo || ""),
-          viejo: viejoEstado,
-          nuevo: estado_nuevo,
+          tipo_tramite: String(r.tramite || ""),
+          viejo_estado: viejoEstado || "",
+          nuevo_estado: estado_nuevo,
         });
       }
 
@@ -139,6 +140,11 @@ export const upsertTramites = async (rows: any[]) => {
       ]);
     }
 
+    console.log(rows[rows.length - 1]);
+    console.log(rows[rows.length - 2]);
+    console.log(rows[rows.length - 3]);
+    console.log(rows[rows.length - 4]);
+
     if (novedades.length > 0) {
       const stmtNotif = await db.prepareAsync(`
         INSERT INTO notificaciones (nroExpediente, partido, partida, tipo_tramite ,viejo_estado, nuevo_estado, fecha) 
@@ -147,12 +153,12 @@ export const upsertTramites = async (rows: any[]) => {
       const fechaNow = new Date().toISOString();
       for (const nov of novedades) {
         await stmtNotif.executeAsync([
-          nov.nro,
+          nov.nroExpediente,
           nov.partido,
           nov.partida,
           nov.tipo_tramite,
-          nov.viejo,
-          nov.nuevo,
+          nov.viejo_estado,
+          nov.nuevo_estado,
           fechaNow,
         ]);
       }
@@ -303,7 +309,7 @@ export const getNotificaciones = async () => {
   const dbSegura = await getDatabase();
   return await dbSegura.getAllAsync(
     `SELECT * FROM notificaciones ORDER BY fecha DESC`,
-  );
+  ) as Novedad[];
 };
 
 export const clearNotificaciones = async () => {
@@ -315,7 +321,7 @@ export const deleteNotificacionById = async (id: number) => {
   const dbSegura = await getDatabase();
   await dbSegura.runAsync(`DELETE FROM notificaciones WHERE id = ?`, [id]);
 };
-export const getTramiteByNro = async (nroExpediente: string) => {
+export const getTramiteByNro = async (nroExpediente: number) => {
   const dbSegura = await getDatabase();
   return (await dbSegura.getFirstAsync(
     `SELECT * FROM tramites WHERE nroExpediente = ?`,
