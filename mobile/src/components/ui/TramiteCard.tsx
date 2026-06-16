@@ -39,7 +39,7 @@ export const TramiteCard: React.FC<TramiteCardProps> = ({
           </View>
 
           <Text style={styles.tipoTramite} numberOfLines={1}>
-            {tramite.tipo_tramite || "Trámite de Agrimensura"}
+            {tramite.tipo_tramite}
           </Text>
 
           <View style={styles.detailsRow}>

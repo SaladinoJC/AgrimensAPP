@@ -47,6 +47,7 @@ export const initDB = async () => {
   `);
 };
 
+
 export const upsertTramites = async (rows: any[]) => {
   const db = await getDatabase();
 
@@ -102,7 +103,7 @@ export const upsertTramites = async (rows: any[]) => {
           nro,
           partido: String(r.partido || ""),
           partida: String(r.partida || ""),
-          tipo_tramite: String(r.tipo_tramite || ""),
+          tipo_tramite: String(r.tipo || ""),
           viejo: viejoEstado,
           nuevo: estado_nuevo,
         });
@@ -141,7 +142,7 @@ export const upsertTramites = async (rows: any[]) => {
     if (novedades.length > 0) {
       const stmtNotif = await db.prepareAsync(`
         INSERT INTO notificaciones (nroExpediente, partido, partida, tipo_tramite ,viejo_estado, nuevo_estado, fecha) 
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
       const fechaNow = new Date().toISOString();
       for (const nov of novedades) {
