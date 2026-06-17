@@ -6,13 +6,22 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Trash2, X, ChevronRight } from "lucide-react-native";
+import {
+  Trash2,
+  X,
+  ChevronRight,
+  BellRing,
+  BellOff,
+  FileText,
+  ArrowRight,
+} from "lucide-react-native";
 import Reanimated, { useAnimatedStyle } from "react-native-reanimated";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import type { SharedValue } from "react-native-reanimated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import {
   getNotificaciones,
   clearNotificaciones,
@@ -21,28 +30,33 @@ import {
 } from "@/db/database";
 import { TramiteDetail } from "@/tramites/tramites.type";
 import { TramiteDetailModal } from "@/components/TramiteDetailModal";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const C_BG = "#0f1724";
-const C_PRIMARY = "#00bfa5";
-const C_CARD = "#1e2a42";
-const C_TEXT = "#eceff1";
-const C_TEXT2 = "#90a4ae";
+import { useTheme } from "@/hooks/useTheme";
+import { useStyles } from "@/hooks/useStyles";
+import { CustomAlert } from "@/components/ui/CustomAlert";
+import { LoadingTramitesSpinner } from "@/components/ui/LoadingTramitesSpinner";
+import { Novedad } from "@/novedades/types";
 
-// Acción que aparece al deslizar a la izquierda
+const C_RED = "#ef5350";
+
 function DeleteAction(
   prog: SharedValue<number>,
   drag: SharedValue<number>,
   onDelete: () => void,
+  styles: any,
 ) {
   const styleAnimation = useAnimatedStyle(() => ({
-    transform: [{ translateX: drag.value + 72 }], // 72 = ancho del botón
+    transform: [{ translateX: drag.value + 80 }],
   }));
 
   return (
     <Reanimated.View style={[styles.deleteContainer, styleAnimation]}>
-      <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
-        <Trash2 color="#fff" size={22} />
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={onDelete}
+        activeOpacity={0.8}
+      >
+        <Trash2 color="#fff" size={20} />
       </TouchableOpacity>
     </Reanimated.View>
   );
@@ -57,36 +71,45 @@ export const NotificacionesScreen = ({
   visible,
   onClose,
 }: NotificacionesScreenProps) => {
-  const [historial, setHistorial] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [historial, setHistorial] = useState<Novedad[]>([]);
   const [selectedTramite, setSelectedTramite] = useState<TramiteDetail | null>(
     null,
   );
 
+  const { colores } = useTheme();
+  const styles = useStyles(createStyles);
+
   useEffect(() => {
-    if (visible) cargarNotificaciones();
+    if (visible) {
+      cargarNotificaciones();
+    } else {
+      setIsLoading(true);
+    }
   }, [visible]);
 
   const cargarNotificaciones = async () => {
-    const data = await getNotificaciones();
-    setHistorial(data);
+    setIsLoading(true);
+    try {
+      const data = await getNotificaciones();
+      setHistorial(data);
+    } catch (error) {
+      console.error("Error cargando historial:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClear = () => {
-    Alert.alert(
-      "Limpiar Notificaciones",
-      "¿Seguro que quieres borrar el historial?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Borrar Todo",
-          style: "destructive",
-          onPress: async () => {
-            await clearNotificaciones();
-            setHistorial([]);
-          },
-        },
-      ],
-    );
+    if (historial.length === 0) return;
+    setAlertVisible(true);
+  };
+
+  const confirmarBorrado = async () => {
+    setAlertVisible(false);
+    await clearNotificaciones();
+    setHistorial([]);
   };
 
   const handleDeleteOne = async (id: number) => {
@@ -94,16 +117,13 @@ export const NotificacionesScreen = ({
     setHistorial((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const onOpenTramite = async (nroExpediente: string) => {
+  const onOpenTramite = async (nroExpediente: number) => {
     try {
       const tramite = await getTramiteByNro(nroExpediente);
       if (tramite) {
         setSelectedTramite(tramite);
       } else {
-        Alert.alert(
-          "Aviso",
-          "Este trámite ya no se encuentra en la base de datos.",
-        );
+        alert("Este expediente ya no se encuentra en la base de datos local.");
       }
     } catch (error) {
       console.error("Error al cargar el trámite:", error);
@@ -117,56 +137,130 @@ export const NotificacionesScreen = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={styles.root}>
         <SafeAreaView style={styles.container}>
+          {/* Header Blindado */}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <X color={C_TEXT} size={28} />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <X color={colores.C_TEXT} size={24} />
             </TouchableOpacity>
-            <Text style={styles.title}>Centro de Novedades</Text>
-            <TouchableOpacity style={styles.positionDelete} onPress={handleClear}>
-              <Trash2 color="#ef5350" size={24} />
+
+            <View style={styles.titleContainer}>
+              <BellRing color={colores.C_PRIMARY} size={20} />
+              <Text style={styles.title}>Centro de Novedades</Text>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.positionDelete,
+                (historial.length === 0 || isLoading) && { opacity: 0.3 },
+              ]}
+              onPress={handleClear}
+              disabled={historial.length === 0 || isLoading}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <Trash2 color={C_RED} size={22} />
             </TouchableOpacity>
           </View>
 
-          {historial.length === 0 ? (
+          {/* Contenido principal */}
+          {isLoading ? (
+            <LoadingTramitesSpinner />
+          ) : historial.length === 0 ? (
             <View style={styles.emptyState}>
+              <View style={styles.emptyIconContainer}>
+                <BellOff size={48} color={colores.C_TEXT2} strokeWidth={1.5} />
+              </View>
+              <Text style={styles.emptyTitle}>Todo al día</Text>
               <Text style={styles.emptyText}>
-                No tienes notificaciones recientes.
+                No hay movimientos recientes en tus expedientes.
               </Text>
             </View>
           ) : (
             <FlatList
               data={historial}
               keyExtractor={(item) => String(item.id)}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <Swipeable
                   friction={2}
                   overshootRight={false}
                   rightThreshold={40}
                   renderRightActions={(prog, drag) =>
-                    DeleteAction(prog, drag, () => handleDeleteOne(item.id))
+                    DeleteAction(
+                      prog,
+                      drag,
+                      () => handleDeleteOne(item.id),
+                      styles,
+                    )
                   }
                 >
                   <TouchableOpacity
                     style={styles.card}
                     onPress={() => onOpenTramite(item.nroExpediente)}
+                    activeOpacity={0.8}
                   >
-                    <View>
-                      <Text style={styles.cardTitle}>
-                        Expediente #{item.nroExpediente}
+                    <View style={styles.cardMain}>
+                      {/* Fila 1: Expediente */}
+                      <View style={styles.novedadHeader}>
+                        <FileText size={18} color={colores.C_PRIMARY} />
+                        <Text style={styles.novedadTitle}>
+                          #{item.nroExpediente}
+                        </Text>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: "auto" }}>
+                          <Text style={styles.detailText}>
+                            Pdo:{" "}
+                            <Text style={styles.detailBold}>
+                              {item.partido || "-"}
+                            </Text>
+                          </Text>
+                          <Text style={styles.dotSeparator}>•</Text>
+                          <Text style={styles.detailText}>
+                            Pda:{" "}
+                            <Text style={styles.detailBold}>
+                              {item.partida || "-"}
+                            </Text>
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Fila 2: Tipo de Trámite */}
+                      <Text style={styles.tipoTramite} numberOfLines={1}>
+                        {item.tipo_tramite}
                       </Text>
-                      <Text style={styles.cardSubtitle}>
-                        De '{item.viejo_estado}' a '{item.nuevo_estado}'
-                      </Text>
+
+                      {/* Fila 4: Transición de Estados */}
+                      <View style={styles.stateChangeContainer}>
+                        <Text style={styles.stateTextViejo} numberOfLines={2}>
+                          {item.viejo_estado}
+                        </Text>
+                        <View style={styles.arrowContainer}>
+                          <ArrowRight
+                            size={14}
+                            color={colores.C_PRIMARY}
+                            strokeWidth={3}
+                          />
+                        </View>
+                        <Text style={styles.stateTextNuevo} numberOfLines={2}>
+                          {item.nuevo_estado}
+                        </Text>
+                      </View>
                     </View>
-                    <ChevronRight color={C_PRIMARY} size={20} />
+
+                    {/* Flecha indicadora */}
+                    <ChevronRight color={colores.C_TEXT2} size={20} />
                   </TouchableOpacity>
                 </Swipeable>
               )}
             />
           )}
 
+          {/* Modales */}
           {selectedTramite && (
             <TramiteDetailModal
               visible={!!selectedTramite}
@@ -174,57 +268,207 @@ export const NotificacionesScreen = ({
               onClose={() => setSelectedTramite(null)}
             />
           )}
+
+          <CustomAlert
+            visible={alertVisible}
+            title="Limpiar Historial"
+            message="¿Estás seguro de que querés borrar todo el historial de novedades? Esta acción no se puede deshacer."
+            variant="danger"
+            confirmText="Borrar Todo"
+            cancelText="Cancelar"
+            onConfirm={confirmarBorrado}
+            onCancel={() => setAlertVisible(false)}
+          />
         </SafeAreaView>
       </GestureHandlerRootView>
     </Modal>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C_BG },
-  header: {
-    flexDirection: "row",
-    justifyContent: "center",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: C_CARD,
-    alignItems: "center",
-  },
-  positionDelete: { position: "absolute", right: 20 },
-  title: { color: C_TEXT, fontSize: 18, fontWeight: "bold" },
-  emptyState: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { color: C_TEXT2, fontSize: 16 },
-  card: {
-    flexDirection: "row",
-    backgroundColor: C_CARD,
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardTitle: {
-    color: C_TEXT,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  cardSubtitle: { color: C_TEXT2, fontSize: 13 },
-  deleteContainer: {
-    width: 72,
-    marginTop: 12,
-    marginRight: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  deleteButton: {
-    backgroundColor: "#ef5350",
-    width: 56,
-    height: "100%",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeButton: { position: "absolute", left: 20, padding: 8 },
-});
+const shadowBase = {
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 4,
+  elevation: 2,
+};
+
+const createStyles = (colores: any) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colores.C_BG,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colores.C_CARD,
+      backgroundColor: colores.C_BG,
+      flexShrink: 0,
+      minHeight: 60,
+      zIndex: 10,
+    },
+    closeButton: {
+      position: "absolute",
+      left: 20,
+      zIndex: 10,
+      backgroundColor: colores.C_SURFACE,
+      padding: 6,
+      borderRadius: 20,
+    },
+    titleContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "800",
+      color: colores.C_TEXT,
+      letterSpacing: -0.5,
+    },
+    positionDelete: {
+      position: "absolute",
+      right: 20,
+      zIndex: 10,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 40,
+    },
+    emptyIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colores.C_CARD,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 20,
+      borderWidth: 2,
+      borderColor: colores.C_SURFACE,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: colores.C_TEXT,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: colores.C_TEXT2,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+    listContent: {
+      paddingVertical: 12,
+    },
+    card: {
+      ...shadowBase,
+      flexDirection: "row",
+      marginHorizontal: 16,
+      marginBottom: 10,
+      padding: 16,
+      borderRadius: 16,
+      backgroundColor: colores.C_CARD,
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderWidth: 1,
+      borderColor: colores.C_SURFACE,
+    },
+    cardMain: {
+      flex: 1,
+      paddingRight: 10,
+    },
+    novedadHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 6,
+      gap: 8,
+    },
+    novedadTitle: {
+      color: colores.C_TEXT,
+      fontWeight: "900",
+      fontSize: 16,
+      letterSpacing: -0.3,
+    },
+    tipoTramite: {
+      fontSize: 13,
+      color: colores.C_PRIMARY,
+      fontWeight: "700",
+      marginBottom: 4,
+    },
+    detailsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colores.C_SURFACE,
+    },
+    detailText: {
+      fontSize: 12,
+      color: colores.C_TEXT2,
+    },
+    detailBold: {
+      fontWeight: "700",
+      color: colores.C_TEXT,
+    },
+    dotSeparator: {
+      marginHorizontal: 8,
+      fontSize: 12,
+      color: colores.C_SURFACE,
+      fontWeight: "900",
+    },
+    stateChangeContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 6,
+      backgroundColor: colores.C_SURFACE,
+      padding: 10,
+      borderRadius: 10,
+    },
+    stateTextViejo: {
+      flex: 1,
+      color: colores.C_TEXT2,
+      fontSize: 11,
+      fontWeight: "600",
+    },
+    arrowContainer: {
+      backgroundColor: colores.C_CARD,
+      padding: 4,
+      borderRadius: 8,
+    },
+    stateTextNuevo: {
+      flex: 1,
+      color: colores.C_TEXT,
+      fontSize: 11,
+      fontWeight: "800",
+      textAlign: "right",
+    },
+    deleteContainer: {
+      width: 70,
+      marginBottom: 10,
+      marginRight: 16,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    deleteButton: {
+      ...shadowBase,
+      backgroundColor: C_RED,
+      width: 56,
+      height: "100%",
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+  });

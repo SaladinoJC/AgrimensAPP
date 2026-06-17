@@ -3,7 +3,7 @@ module.exports = function(api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'react-native-reanimated/plugin', // Esto es lo que habilita los gestos a 60 FPS
+      'react-native-reanimated/plugin', 
     ],
   };
 };

@@ -1,53 +1,69 @@
-import 'react-native-gesture-handler';
-import React, { useState, useEffect, useRef } from 'react';
+import "react-native-gesture-handler";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
   StatusBar,
   TouchableOpacity,
-  Alert,
   Text,
   AppState,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Map, User, Lock, BellRing } from 'lucide-react-native';
-import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Map, User, Lock, BellRing } from "lucide-react-native";
+import { hideAsync } from "expo-splash-screen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useStore } from '@/store/useStore';
-import { upsertTramites } from '@/db/database';
-import { DashboardScreen } from '@/screens/DashboardScreen';
-import { CredentialsModal } from '@/components/CredentialsModal';
-import { LoginScreen } from '@/screens/LoginScreen';
+import { useStore } from "@/store/useStore";
+import { upsertTramites } from "@/db/database";
+import { DashboardScreen } from "@/screens/DashboardScreen";
+import { CredentialsModal } from "@/screens/CredentialsModal";
+import { LoginScreen } from "@/screens/LoginScreen";
 
-import { useAppBoot } from '@/hooks/useAppBoot';
-import { useAuthManager } from '@/hooks/useAuthManager';
-import { useSincronizador } from '@/hooks/useSincronizador';
-import { NovedadesModal } from '@/components/ui/NovedadesModal';
-import { NotificacionesScreen } from '@/screens/NotificacionesScreen';
+import { useAppBoot } from "@/hooks/useAppBoot";
+import { useAuthManager } from "@/hooks/useAuthManager";
+import { useSincronizador } from "@/hooks/useSincronizador";
+import { NovedadesModal } from "@/components/ui/NovedadesModal";
+import { NotificacionesScreen } from "@/screens/NotificacionesScreen";
+import { useTheme } from "@/hooks/useTheme";
+import { useStyles } from "@/hooks/useStyles";
 
-const C_BG = "#0f1724";
-const C_PRIMARY = "#00bfa5";
-const C_TEXT = "#eceff1";
+import { CustomAlert, AlertVariant } from "@/components/ui/CustomAlert";
 
 export default function App() {
-  const {
-    isLoggedIn,
-    setIsSyncing,
-    novedades,
-    setNovedades,
-    setRefreshKey,
-  } = useStore();
+  const { isLoggedIn, setIsSyncing, novedades, setNovedades, setRefreshKey } =
+    useStore();
+
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showNotificaciones, setShowNotificaciones] = useState(false);
 
+  const [alertConfig, setAlertConfig] = useState({
+    visible: false,
+    title: "",
+    message: "",
+    variant: "info" as AlertVariant,
+    onConfirmAction: undefined as (() => void) | undefined, 
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    variant: AlertVariant = "info",
+    onConfirmAction?: () => void,
+  ) => {
+    setAlertConfig({ visible: true, title, message, variant, onConfirmAction });
+  };
+
   const { appReady } = useAppBoot();
-  const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } = useAuthManager();
+  const { isAuthenticated, setIsAuthenticated, handleLogout, unlockApp } =
+    useAuthManager( showAlert);
   const { sync, cancelSync, sincronizadorElement } = useSincronizador();
 
   const appState = useRef(AppState.currentState);
   const timestampFondo = useRef<number | null>(null);
   const TIEMPO_MAXIMO_MINUTOS = 5;
+
+  const { theme, colores } = useTheme();
+  const styles = useStyles(createStyles);
 
   useEffect(() => {
     if (appReady) {
@@ -56,25 +72,24 @@ export default function App() {
   }, [appReady]);
 
   useEffect(() => {
-    const subscripcion = AppState.addEventListener('change', (nextAppState) => {
-
-      if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
-        // La app se minimizó o se bloqueó la pantalla del celular: Empezamos a contar
+    const subscripcion = AppState.addEventListener("change", (nextAppState) => {
+      if (
+        appState.current === "active" &&
+        nextAppState.match(/inactive|background/)
+      ) {
         timestampFondo.current = Date.now();
-      }
-
-      else if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        // La app volvió a primer plano: Verificamos cuánto tiempo pasó
+      } else if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active"
+      ) {
         if (timestampFondo.current) {
           const tiempoPasadoMs = Date.now() - timestampFondo.current;
           const minutosPasados = tiempoPasadoMs / (1000 * 60);
 
           if (minutosPasados >= TIEMPO_MAXIMO_MINUTOS) {
-            // Pasó el tiempo límite: Quitamos la autenticación para que pida huella/PIN
             setIsAuthenticated(false);
           }
         }
-        // Reseteamos el reloj
         timestampFondo.current = null;
       }
       appState.current = nextAppState;
@@ -83,25 +98,46 @@ export default function App() {
     return () => subscripcion.remove();
   }, [setIsAuthenticated]);
 
-  // Lógica puente de Sincronización
+  const handleAlertConfirm = () => {
+    if (alertConfig.onConfirmAction) {
+      alertConfig.onConfirmAction();
+    }
+    setAlertConfig((prev) => ({
+      ...prev,
+      visible: false,
+      onConfirmAction: undefined,
+    }));
+  };
+
   const handleSync = async () => {
     const freshState = useStore.getState();
 
-    if (freshState.isSyncing || !freshState.credenciales.cuit || !freshState.credenciales.cit) return;
+    if (
+      freshState.isSyncing ||
+      !freshState.credenciales.cuit ||
+      !freshState.credenciales.cit
+    )
+      return;
     setIsSyncing(true);
 
-    const result = await sync({ cuit: freshState.credenciales.cuit, cit: freshState.credenciales.cit });
+    const result = await sync({
+      cuit: freshState.credenciales.cuit,
+      cit: freshState.credenciales.cit,
+    });
 
     if (!result.ok) {
-      if (result.error?.message.includes("Credenciales") || result.error?.message.includes("sesión expirada")) {
-        Alert.alert("Sesión Expirada", result.error.message, [{
-          text: "Aceptar", onPress: () => {
-            setShowProfileModal(false);
-            handleLogout();
-          }
-        }]);
+      if (
+        result.error?.message.includes("Credenciales") ||
+        result.error?.message.includes("sesión expirada")
+      ) {
+        // Alerta con Callback: Forzamos el cierre de sesión al tocar Aceptar
+        showAlert("Sesión Expirada", result.error.message, "warning", () => {
+          setShowProfileModal(false);
+          handleLogout();
+        });
       } else {
-        Alert.alert("Error de Sincronización", result.error.message);
+        // Alerta simple de error
+        showAlert("Error de Sincronización", result.error.message, "danger");
       }
       setIsSyncing(false);
       return;
@@ -112,36 +148,37 @@ export default function App() {
       if (novs.length > 0) {
         setNovedades(novs);
       } else {
-        Alert.alert(
+        // Alerta de éxito
+        showAlert(
           "Sincronización Exitosa",
-          `Se procesaron ${result.rows.length} trámites.\nNo hay cambios de estado recientes.`
+          `Se procesaron ${result.rows.length} trámites.\nNo hay cambios de estado recientes.`,
+          "success",
         );
       }
     } catch (dbError) {
-      Alert.alert("Error guardando datos", "Hubo un problema con la base de datos local.");
-    }
-    finally {
+      showAlert(
+        "Error guardando datos",
+        "Hubo un problema con la base de datos local.",
+        "danger",
+      );
+    } finally {
       setIsSyncing(false);
-      setRefreshKey(); // Forzar recarga de lista en Dashboard
+      setRefreshKey();
     }
   };
 
   const handleCancelSync = () => {
     cancelSync();
     setIsSyncing(false);
-  }
+  };
 
-  // Lógica principal de Renderizado
   const renderContent = () => {
-    // 1. Mostrar spinner mientras la BD y SecureStore cargan
     if (!appReady) return null;
 
-    // 2. Si NO hay sesión, lo mandamos directo al Login (sin pedir PIN)
     if (!isLoggedIn) {
       return (
         <LoginScreen
           onLoginSuccess={() => {
-            // Cuando loguea por primera vez, asumimos que ya es seguro dejarlo pasar
             setIsAuthenticated(true);
             handleSync();
           }}
@@ -149,40 +186,38 @@ export default function App() {
       );
     }
 
-    // 3. Si SÍ hay sesión, pero aún no se ha autenticado con PIN/Huella
     if (!isAuthenticated) {
       return (
-        <View style={[styles.loadingBg, { padding: 20 }]}>
-          <Lock color={C_PRIMARY} size={64} style={{ marginBottom: 20 }} />
-          <Text style={{ color: C_TEXT, fontSize: 24, fontWeight: 'bold', marginBottom: 40 }}>AgrimensAPP</Text>
+        <View style={styles.loadingBg}>
+          <Lock color={colores.C_PRIMARY} size={64} style={styles.lockIcon} />
+          <Text style={styles.appName}>AgrimensAPP</Text>
           <TouchableOpacity
             style={styles.btnPrimary}
             activeOpacity={0.8}
             onPress={unlockApp}
           >
-            <Text style={{ color: C_BG, fontWeight: 'bold', fontSize: 16 }}>Desbloquear Aplicación</Text>
+            <Text style={styles.btnPrimaryText}>Desbloquear Aplicación</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
-    // 4. Si hay sesión y ya se autenticó (El usuario está adentro)
     return (
       <>
         <View style={styles.appBar}>
           <View style={styles.appBarLeft}>
-            <Map color={C_PRIMARY} size={24} />
+            <Map color={colores.C_PRIMARY} size={24} />
             <Text style={styles.appBarTitle}>AgrimensAPP</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View style={styles.appBarRight}>
             <TouchableOpacity onPress={() => setShowNotificaciones(true)}>
-              <BellRing size={24} color={C_PRIMARY} />
+              <BellRing size={24} color={colores.C_PRIMARY} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.profileButton}
               onPress={() => setShowProfileModal(true)}
             >
-              <User size={24} color={C_PRIMARY} />
+              <User size={24} color={colores.C_PRIMARY} />
             </TouchableOpacity>
           </View>
         </View>
@@ -214,22 +249,90 @@ export default function App() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={C_BG} />
+        <StatusBar
+          barStyle={theme === "dark" ? "light-content" : "dark-content"}
+          backgroundColor={colores.C_BG}
+        />
         {renderContent()}
+
+        <CustomAlert
+          visible={alertConfig.visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          variant={alertConfig.variant}
+          onConfirm={handleAlertConfirm}
+        />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C_BG },
-  loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: C_BG },
-  loadingBg: { flex: 1, backgroundColor: C_BG, justifyContent: 'center', alignItems: 'center' },
-  appBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, paddingBottom: 4,backgroundColor: C_BG, alignItems: 'center', borderBottomColor: '#182136', borderBottomWidth: 1 },
-  appBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  appBarTitle: { color: C_TEXT, fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
-  profileButton: { padding: 8 },
-  btnPrimary: { backgroundColor: C_PRIMARY, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8, alignItems: 'center' },
-});
+const createStyles = (colores: any) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colores.C_BG,
+    },
+    loadingBg: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colores.C_BG,
+      padding: 20,
+    },
+    lockIcon: {
+      marginBottom: 20,
+    },
+    appName: {
+      color: colores.C_TEXT,
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 40,
+    },
+    appBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      padding: 16,
+      paddingBottom: 4,
+      alignItems: "center",
+      borderBottomColor: colores.C_SURFACE,
+      borderBottomWidth: 1,
+      backgroundColor: colores.C_BG,
+    },
+    appBarLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    appBarRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 16,
+    },
+    appBarTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      marginLeft: 8,
+      color: colores.C_TEXT,
+    },
+    profileButton: {
+      padding: 8,
+    },
+    btnPrimary: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 8,
+      alignItems: "center",
+      backgroundColor: colores.C_PRIMARY,
+    },
+    btnPrimaryText: {
+      color: colores.C_BG,
+      fontWeight: "bold",
+      fontSize: 16,
+    },
+  });

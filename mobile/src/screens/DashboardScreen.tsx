@@ -6,8 +6,7 @@ import { SearchFilters } from '@/components/SearchFilters';
 import { SyncButton } from '@/components/ui/SyncButton';
 import { TramiteList } from '@/components/TramiteList';
 import { PaginationControl } from '@/components/PaginationControl';
-
-const C_BG = "#0f1724";
+import { useStyles } from '@/hooks/useStyles';
 
 interface DashboardScreenProps {
   onSync: () => void;
@@ -18,10 +17,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onSync,
   onSyncCancel,
 }) => {
-  const { filtros, paginacion, refreshKey } = useStore();
-
+  const { filtros, paginacion, refreshKey } = useStore();  
   const [totalCount, setTotalCount] = useState(0);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const styles = useStyles(createStyles);
 
   const loadStats = async () => {
     setIsLoadingStats(true);
@@ -43,13 +42,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-  // recalcular si los filtros globales del store cambian.
   useEffect(() => {
     loadStats();
   }, [filtros, refreshKey]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       {/* Botón de sincronización */}
       <SyncButton onSync={onSync} onCancel={onSyncCancel} />
 
@@ -76,10 +74,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colores: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: C_BG,
+    backgroundColor: colores.C_BG,
   },
   content: {
     flex: 1,

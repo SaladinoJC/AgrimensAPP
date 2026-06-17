@@ -13,7 +13,10 @@
       "backgroundColor": "#0f1724"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "AgrimensAPP necesita usar Face ID / Touch ID para que puedas iniciar sesión de forma rápida y segura."
+      }
     },
     "android": {
       "package": "com.agrimensapp.mobile",
@@ -28,11 +31,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "WAKE_LOCK",
         "USE_BIOMETRIC",
-        "USE_FINGERPRINT",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.WAKE_LOCK"
+        "USE_FINGERPRINT"
       ]
     },
     "web": {
@@ -41,7 +40,6 @@
     "plugins": [
       "expo-secure-store",
       "expo-local-authentication",
-      "expo-notifications",
       "@react-native-community/datetimepicker",
       "expo-sqlite"
     ],
